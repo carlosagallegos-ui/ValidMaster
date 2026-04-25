@@ -3,9 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Package, Pill, BarChart3, FileJson, FileText, Printer, AlertTriangle, Activity, PieChart, LayoutDashboard } from "lucide-react";
+import { Package, Pill, BarChart3, FileJson, FileText, Printer, AlertTriangle, Activity, PieChart } from "lucide-react";
 import { PieChart as RechartsPie, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
-import InformesDashboard from "@/components/InformesDashboard";
 
 const COLORS = ["#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
@@ -15,10 +14,9 @@ const escapeXml = (str) => {
 };
 
 export default function Informes() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("existencias");
   const [medications, setMedications] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
-  const [adverseEvents, setAdverseEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -27,11 +25,9 @@ export default function Informes() {
     Promise.all([
       base44.entities.Medication.list("-received_date", 300),
       base44.entities.Prescription.list("-created_date", 500),
-      base44.entities.AdverseEvent.list("-event_date", 500)
-    ]).then(([meds, rxs, aevents]) => {
+    ]).then(([meds, rxs]) => {
       setMedications(meds);
       setPrescriptions(rxs);
-      setAdverseEvents(aevents);
       setLoading(false);
     });
   }, []);
@@ -44,14 +40,7 @@ export default function Informes() {
     return rxDate >= start && rxDate <= end;
   });
 
-  // ── Stats for dashboard ──
   const totalRx = prescriptions.length;
-  const validadas = prescriptions.filter(r => r.validation_status === "Validada").length;
-  const pendientes = prescriptions.filter(r => !r.validation_status || r.validation_status === "Pendiente").length;
-  const rechazadas = prescriptions.filter(r => r.validation_status === "Rechazada").length;
-  const adversos = prescriptions.filter(r => r.application_result === "Reacción adversa").length;
-  const disponibleMeds = medications.filter(m => m.status === "Disponible").length;
-  const agotadoMeds = medications.filter(m => m.status === "Agotado").length;
 
   // Mezclas por protocolo (top 8)
   const protocolCount = {};
@@ -59,25 +48,13 @@ export default function Informes() {
     const p = rx.protocol_name || "Desconocido";
     protocolCount[p] = (protocolCount[p] || 0) + 1;
   });
-  const protocolData = Object.entries(protocolCount)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([name, value]) => ({ name: name.length > 20 ? name.slice(0, 20) + "…" : name, value }));
 
-  // Estado de prescripciones
-  const statusData = [
-    { name: "Validadas", value: validadas },
-    { name: "Pendientes", value: pendientes },
-    { name: "Rechazadas", value: rechazadas },
-  ].filter(d => d.value > 0);
-
-  // ── Eventos adversos ──
+  // Eventos adversos
   const adverseRxs = prescriptions.filter(r =>
     r.application_result === "Reacción adversa" || r.application_result === "Problemas"
   );
 
-  // ── Mezclas por patología (basado en protocol_name como proxy) ──
-  // Agrupar por protocol_name
+  // Mezclas por protocolo agrupadas
   const byProtocol = {};
   prescriptions.forEach(rx => {
     const key = rx.protocol_name || "Sin protocolo";
@@ -88,12 +65,10 @@ export default function Informes() {
   });
   const byProtocolList = Object.values(byProtocol).sort((a, b) => b.total - a.total);
 
-  // ── Tipos de patología (distribución) ──
   const patologiaData = Object.entries(protocolCount)
     .sort((a, b) => b[1] - a[1])
     .map(([name, value]) => ({ name, value }));
 
-  // ── Downloads ──
   const downloadJSON = () => {
     const blob = new Blob([JSON.stringify(filteredPrescriptions, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
@@ -125,7 +100,6 @@ export default function Informes() {
   }
 
   const TABS = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "existencias", label: "Existencias", icon: Package },
     { id: "mezclas", label: "Mezclas Realizadas", icon: Pill },
     { id: "adversos", label: "Eventos Adversos", icon: AlertTriangle },
@@ -157,15 +131,6 @@ export default function Informes() {
           );
         })}
       </div>
-
-      {/* ── DASHBOARD ── */}
-      {activeTab === "dashboard" && (
-        <InformesDashboard
-          prescriptions={prescriptions}
-          medications={medications}
-          adverseEvents={adverseEvents}
-        />
-      )}
 
       {/* ── EXISTENCIAS ── */}
       {activeTab === "existencias" && (
