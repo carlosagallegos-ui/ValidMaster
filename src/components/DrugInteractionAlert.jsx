@@ -9,8 +9,11 @@ function SeverityIcon({ severity }) {
 }
 
 export default function DrugInteractionAlert({ drugNames }) {
-  const [expanded, setExpanded] = useState({});
   const interactions = detectInteractions(drugNames);
+  // Auto-expand contraindicadas y graves por defecto
+  const [expanded, setExpanded] = useState(() =>
+    Object.fromEntries(interactions.map((i, idx) => [idx, i.severity !== "MODERADA"]))
+  );
 
   if (interactions.length === 0) return null;
 

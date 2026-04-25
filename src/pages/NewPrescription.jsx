@@ -14,6 +14,7 @@ import AntibioticSelector from "@/components/AntibioticSelector";
 import NPTForm from "@/components/NPTForm";
 import { calculateDose, validateDose, generateAlerts } from "@/lib/chemoProtocols";
 import DrugInteractionAlert from "@/components/DrugInteractionAlert";
+import { detectInteractions } from "@/lib/drugInteractions";
 import { calculateNPT, validateNPT } from "@/lib/nptCalculations";
 
 const PRESCRIPTION_TYPES = [
@@ -95,6 +96,7 @@ export default function NewPrescription() {
 
   // ── Handlers Oncológico ──
   const handleDrugsChange = (drugs) => {
+    setOverrideInteractions(false);
     setSelectedDrugs(drugs);
     if (patient && drugs.length > 0) {
       const doses = drugs.map(drug => {
@@ -300,6 +302,16 @@ export default function NewPrescription() {
     ? antibioticDrugs.some(d => !d.is_valid)
     : false;
 
+  // Detección de interacciones en tiempo real
+  const currentDrugNames = prescriptionType === "Oncologico"
+    ? selectedDrugs.map(d => d.drug_name)
+    : prescriptionType === "Antibiotico"
+    ? antibioticDrugs.map(d => d.drug_name)
+    : [];
+  const activeInteractions = detectInteractions(currentDrugNames);
+  const hasContraindicated = activeInteractions.some(i => i.severity === "CONTRAINDICADA");
+  const [overrideInteractions, setOverrideInteractions] = useState(false);
+
   const typeConfig = PRESCRIPTION_TYPES.find(t => t.value === prescriptionType);
 
   return (
@@ -316,10 +328,17 @@ export default function NewPrescription() {
       </div>
 
       {/* Progress bar */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         {[1, 2, 3].map(s => (
           <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${s <= step ? "bg-primary" : "bg-muted"}`} />
         ))}
+        {activeInteractions.length > 0 && step === 2 && (
+          <span className={`shrink-0 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse ${
+            hasContraindicated ? "bg-red-100 text-red-700" : "bg-orange-100 text-orange-700"
+          }`}>
+            {hasContraindicated ? "🚫 Contraindicación" : `⚠️ ${activeInteractions.length} interacción(es)`}
+          </span>
+        )}
       </div>
 
       {/* ── STEP 1 ── */}
@@ -486,7 +505,7 @@ export default function NewPrescription() {
               </div>
               <AntibioticSelector
                 selectedDrugs={antibioticDrugs}
-                onDrugsChange={setAntibioticDrugs}
+                onDrugsChange={(drugs) => { setOverrideInteractions(false); setAntibioticDrugs(drugs); }}
                 patientWeight={patient?.weight_kg}
               />
               {antibioticDrugs.length >= 2 && (
@@ -510,11 +529,37 @@ export default function NewPrescription() {
             </div>
           )}
 
+          {/* Bloqueo por contraindicación grave */}
+          {hasContraindicated && !overrideInteractions && canGoToStep3() && (
+            <div className="bg-red-50 border-2 border-red-400 rounded-xl p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🚫</span>
+                <div>
+                  <p className="font-bold text-red-800 text-sm">Contraindicación detectada — Revisión obligatoria</p>
+                  <p className="text-xs text-red-600 mt-1">
+                    Existe al menos una interacción CONTRAINDICADA entre los fármacos seleccionados.
+                    Para continuar, el médico debe revisar y confirmar explícitamente.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setOverrideInteractions(true)}
+                className="w-full text-sm font-semibold text-red-700 border-2 border-red-400 rounded-lg py-2 hover:bg-red-100 transition-colors"
+              >
+                Entendido — Asumo la responsabilidad clínica y continúo
+              </button>
+            </div>
+          )}
+
           <div className="flex justify-between">
             <Button variant="outline" onClick={() => setStep(1)} className="gap-2">
               <ArrowLeft className="h-4 w-4" /> Anterior
             </Button>
-            <Button onClick={goToStep3} disabled={!canGoToStep3()} className="gap-2">
+            <Button
+              onClick={goToStep3}
+              disabled={!canGoToStep3() || (hasContraindicated && !overrideInteractions)}
+              className={`gap-2 ${hasContraindicated && !overrideInteractions ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
               Siguiente <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
