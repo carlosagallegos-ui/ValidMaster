@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import InformesDashboard from "@/components/InformesDashboard";
-import { ClipboardList, CheckCircle, Clock, XCircle, TestTube } from "lucide-react";
+import { ClipboardList, CheckCircle, Clock, XCircle, TestTube, AlertTriangle, CalendarX } from "lucide-react";
 
 export default function Dashboard() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -60,6 +60,60 @@ export default function Dashboard() {
           );
         })}
       </div>
+
+      {/* Alertas de Caducidad */}
+      {(() => {
+        const today = new Date();
+        const in30Days = new Date(today);
+        in30Days.setDate(today.getDate() + 30);
+
+        const expiringSoon = medications.filter(m => {
+          if (!m.expiration_date) return false;
+          const exp = new Date(m.expiration_date);
+          return exp <= in30Days && m.status !== "Caducado";
+        }).sort((a, b) => new Date(a.expiration_date) - new Date(b.expiration_date));
+
+        if (expiringSoon.length === 0) return null;
+
+        return (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-amber-200 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <h2 className="font-semibold text-amber-800">Alertas de Caducidad</h2>
+              <span className="ml-auto bg-amber-200 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full">{expiringSoon.length} medicamento(s)</span>
+            </div>
+            <div className="divide-y divide-amber-100">
+              {expiringSoon.map(med => {
+                const exp = new Date(med.expiration_date);
+                const daysLeft = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+                const isUrgent = daysLeft <= 7;
+                return (
+                  <div key={med.id} className={`flex items-center gap-4 px-6 py-3 ${isUrgent ? "bg-red-50" : ""}`}>
+                    <div className={`p-2 rounded-lg shrink-0 ${isUrgent ? "bg-red-100" : "bg-amber-100"}`}>
+                      <CalendarX className={`h-4 w-4 ${isUrgent ? "text-red-600" : "text-amber-600"}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{med.drug_name}</p>
+                      <p className="text-xs text-muted-foreground">{med.concentration} {med.concentration_unit} · Lote: {med.lot_number || "—"}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-bold ${isUrgent ? "text-red-600" : "text-amber-600"}`}>
+                        {daysLeft <= 0 ? "¡Caducado!" : `${daysLeft} día(s)`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{exp.toLocaleDateString("es-MX")}</p>
+                    </div>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full shrink-0 ${
+                      isUrgent ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
+                    }`}>
+                      {isUrgent ? "🔴 Urgente" : "⚠️ Próximo"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       <InformesDashboard
         prescriptions={prescriptions}
