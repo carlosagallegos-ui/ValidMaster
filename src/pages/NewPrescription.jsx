@@ -13,6 +13,7 @@ import DrugSelector from "@/components/DrugSelector";
 import AntibioticSelector from "@/components/AntibioticSelector";
 import NPTForm from "@/components/NPTForm";
 import { calculateDose, validateDose, generateAlerts } from "@/lib/chemoProtocols";
+import DrugInteractionAlert from "@/components/DrugInteractionAlert";
 import { calculateNPT, validateNPT } from "@/lib/nptCalculations";
 
 const PRESCRIPTION_TYPES = [
@@ -456,6 +457,9 @@ export default function NewPrescription() {
                 onDrugsChange={handleDrugsChange}
                 onProtocolDetected={handleProtocolDetected}
               />
+              {selectedDrugs.length >= 2 && (
+                <DrugInteractionAlert drugNames={selectedDrugs.map(d => d.drug_name)} />
+              )}
               {selectedDrugs.length > 0 && (
                 <div className={`rounded-xl border p-4 ${detectedProtocol ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
                   {detectedProtocol ? (
@@ -485,6 +489,9 @@ export default function NewPrescription() {
                 onDrugsChange={setAntibioticDrugs}
                 patientWeight={patient?.weight_kg}
               />
+              {antibioticDrugs.length >= 2 && (
+                <DrugInteractionAlert drugNames={antibioticDrugs.map(d => d.drug_name)} />
+              )}
             </div>
           )}
 
@@ -517,6 +524,14 @@ export default function NewPrescription() {
       {/* ── STEP 3 — Revisión y confirmación ── */}
       {step === 3 && (
         <div className="space-y-6">
+
+          {/* Interacciones farmacológicas */}
+          {prescriptionType === "Oncologico" && drugDoses.length >= 2 && (
+            <DrugInteractionAlert drugNames={drugDoses.map(d => d.drug_name)} />
+          )}
+          {prescriptionType === "Antibiotico" && antibioticDrugs.length >= 2 && (
+            <DrugInteractionAlert drugNames={antibioticDrugs.map(d => d.drug_name)} />
+          )}
 
           {/* Alertas */}
           {alerts.length > 0 && (
