@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, CheckCircle, AlertTriangle, Zap } from "lucide-react";
+import { Search, CheckCircle, AlertTriangle, Zap, ShieldAlert } from "lucide-react";
 import { formatDate } from "@/lib/dateUtils";
+import AdverseEventForm from "@/components/AdverseEventForm";
 
 export default function AplicacionMezclas() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -18,6 +19,7 @@ export default function AplicacionMezclas() {
   const [reactionType, setReactionType] = useState("");
   const [severity, setSeverity] = useState("Leve");
   const [saving, setSaving] = useState(false);
+  const [showAdverseForm, setShowAdverseForm] = useState(false);
 
   useEffect(() => {
     loadPrescriptions();
@@ -25,7 +27,6 @@ export default function AplicacionMezclas() {
 
   const loadPrescriptions = async () => {
     const data = await base44.entities.Prescription.list("-created_date", 200);
-    // Filtrar prescripciones entregadas y no aplicadas
     const pending = data.filter(p => p.delivered && p.application_status !== "Aplicada" && p.application_status !== "Rechazada");
     setPrescriptions(pending);
     setLoading(false);
@@ -44,6 +45,7 @@ export default function AplicacionMezclas() {
     setNotes("");
     setReactionType("");
     setSeverity("Leve");
+    setShowAdverseForm(false);
   };
 
   const handleSubmitResult = async () => {
@@ -74,9 +76,23 @@ export default function AplicacionMezclas() {
     }
 
     await base44.entities.Prescription.update(selectedRx.id, updateData);
+
+    // Si hay reacción adversa, mostrar el formulario detallado
+    if (result === "Reacción adversa") {
+      setShowAdverseForm(true);
+      setSaving(false);
+      await loadPrescriptions();
+      return;
+    }
+
     await loadPrescriptions();
     setSelectedRx(null);
     setSaving(false);
+  };
+
+  const handleAdverseEventSaved = async () => {
+    setShowAdverseForm(false);
+    setSelectedRx(null);
   };
 
   if (loading) {
@@ -87,7 +103,7 @@ export default function AplicacionMezclas() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Aplicación de Mezclas</h1>
-        <p className="text-sm text-muted-foreground mt-1">Registra los resultados de la aplicación de mezclas oncológicas</p>
+        <p className="text-sm text-muted-foreground mt-1">Registra los resultados de la aplicación de mezclas</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -130,7 +146,16 @@ export default function AplicacionMezclas() {
 
         {/* Detalle */}
         <div className="lg:col-span-2">
-          {selectedRx ? (
+          {showAdverseForm && selectedRx ? (
+            /* Formulario de evento adverso detallado */
+            <div className="bg-card rounded-xl border border-red-200 p-6">
+              <AdverseEventForm
+                rx={selectedRx}
+                onSaved={handleAdverseEventSaved}
+                onCancel={() => { setShowAdverseForm(false); setSelectedRx(null); }}
+              />
+            </div>
+          ) : selectedRx ? (
             <div className="space-y-6">
               {/* Info paciente y prescripción */}
               <div className="grid grid-cols-2 gap-4">
@@ -190,8 +215,12 @@ export default function AplicacionMezclas() {
 
                 {result === "Reacción adversa" && (
                   <div className="space-y-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-red-700">
+                      <ShieldAlert className="h-4 w-4" />
+                      <p className="text-xs font-semibold">Se registrará un reporte de farmacovigilancia detallado al confirmar</p>
+                    </div>
                     <div>
-                      <Label htmlFor="reactionType" className="text-xs">Tipo de reacción</Label>
+                      <Label htmlFor="reactionType" className="text-xs">Tipo de reacción (resumen inicial)</Label>
                       <Input
                         id="reactionType"
                         placeholder="Ej: Náuseas, erupciones, fiebre..."
@@ -201,7 +230,7 @@ export default function AplicacionMezclas() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="severity" className="text-xs">Severidad</Label>
+                      <Label htmlFor="severity" className="text-xs">Severidad inicial</Label>
                       <Select value={severity} onValueChange={setSeverity}>
                         <SelectTrigger id="severity" className="h-9 text-xs mt-1">
                           <SelectValue />
@@ -241,7 +270,8 @@ export default function AplicacionMezclas() {
                     {result === "Exitosa" && <CheckCircle className="h-4 w-4" />}
                     {result === "Problemas" && <AlertTriangle className="h-4 w-4" />}
                     {result === "Reacción adversa" && <Zap className="h-4 w-4" />}
-                    {saving ? "Guardando..." : "Registrar Resultado"}
+                    {saving ? "Guardando..." :
+                      result === "Reacción adversa" ? "Continuar → Reporte detallado" : "Registrar Resultado"}
                   </Button>
                   <Button variant="outline" onClick={() => setSelectedRx(null)}>
                     Cancelar

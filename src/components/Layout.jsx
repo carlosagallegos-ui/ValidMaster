@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe } from "lucide-react";
+import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect } from "react";
 
@@ -26,6 +26,7 @@ const ALL_NAV_ITEMS = [
 
   // Enfermero - Aplicación de mezclas
   { path: "/aplicacion-mezclas", label: "Aplicación de Mezclas", icon: Syringe, roles: ["admin", "jefe_centro", "enfermero", "encargado_calidad"] },
+  { path: "/eventos-adversos", label: "Eventos Adversos", icon: ShieldAlert, roles: ["admin", "jefe_centro", "validador", "enfermero", "encargado_calidad"] },
 
   // Informes
   { path: "/informes", label: "Informes", icon: BarChart3, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "encargado_calidad"] },

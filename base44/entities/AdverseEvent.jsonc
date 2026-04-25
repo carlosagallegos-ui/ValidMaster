@@ -1,0 +1,149 @@
+{
+  "name": "AdverseEvent",
+  "type": "object",
+  "properties": {
+    "prescription_id": {
+      "type": "string",
+      "description": "ID de la prescripci\u00f3n vinculada"
+    },
+    "patient_name": {
+      "type": "string",
+      "description": "Nombre del paciente"
+    },
+    "patient_id": {
+      "type": "string",
+      "description": "ID del paciente"
+    },
+    "drug_name": {
+      "type": "string",
+      "description": "F\u00e1rmaco implicado"
+    },
+    "prescription_type": {
+      "type": "string",
+      "enum": [
+        "Oncologico",
+        "Antibiotico",
+        "NPT"
+      ],
+      "description": "Tipo de prescripci\u00f3n"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "Hipersensibilidad / Anafilaxia",
+        "N\u00e1useas / V\u00f3mito",
+        "Flebitis / Extravasaci\u00f3n",
+        "Neurotoxicidad",
+        "Nefrotoxicidad",
+        "Hepatotoxicidad",
+        "Mielosupresi\u00f3n",
+        "Cardiotoxicidad",
+        "Reacci\u00f3n en sitio de infusi\u00f3n",
+        "Fiebre / Escalofr\u00edo",
+        "Hipotensi\u00f3n",
+        "Broncoespasmo",
+        "Otro"
+      ],
+      "description": "Tipo de evento adverso"
+    },
+    "event_type_other": {
+      "type": "string",
+      "description": "Descripci\u00f3n cuando el tipo es Otro"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "Leve",
+        "Moderada",
+        "Severa",
+        "Amenaza para la vida",
+        "Fatal"
+      ],
+      "description": "Severidad (CTCAE)"
+    },
+    "ctcae_grade": {
+      "type": "number",
+      "enum": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "description": "Grado CTCAE"
+    },
+    "onset_time": {
+      "type": "string",
+      "description": "Tiempo de inicio del evento (min/h tras inicio de infusi\u00f3n)"
+    },
+    "duration": {
+      "type": "string",
+      "description": "Duraci\u00f3n del evento"
+    },
+    "action_taken": {
+      "type": "string",
+      "enum": [
+        "Ninguna",
+        "Reducci\u00f3n de velocidad de infusi\u00f3n",
+        "Interrupci\u00f3n temporal",
+        "Suspensi\u00f3n definitiva",
+        "Medicaci\u00f3n de rescate",
+        "Traslado a urgencias"
+      ],
+      "description": "Acci\u00f3n tomada"
+    },
+    "rescue_medication": {
+      "type": "string",
+      "description": "Medicamentos de rescate utilizados"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "Resuelto",
+        "Resuelto con secuelas",
+        "En seguimiento",
+        "No resuelto",
+        "Fatal"
+      ],
+      "description": "Desenlace del evento"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales y observaciones cl\u00ednicas"
+    },
+    "reported_by": {
+      "type": "string",
+      "description": "Nombre del reportante"
+    },
+    "reported_by_role": {
+      "type": "string",
+      "description": "Rol del reportante"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora del evento"
+    },
+    "protocol_name": {
+      "type": "string",
+      "description": "Protocolo / indicaci\u00f3n"
+    }
+  },
+  "required": [
+    "prescription_id",
+    "patient_name",
+    "drug_name",
+    "event_type",
+    "severity"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

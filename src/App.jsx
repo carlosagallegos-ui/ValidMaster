@@ -23,6 +23,7 @@ import Informes from './pages/Informes';
 import EstadoPrescripciones from './pages/EstadoPrescripciones';
 import Usuarios from './pages/Usuarios';
 import AplicacionMezclas from './pages/AplicacionMezclas';
+import EventosAdversos from './pages/EventosAdversos';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/estado-prescripciones" element={<EstadoPrescripciones />} />
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/aplicacion-mezclas" element={<AplicacionMezclas />} />
+        <Route path="/eventos-adversos" element={<EventosAdversos />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>
