@@ -43,7 +43,6 @@ export default function ValidacionMezclas() {
       mixIndex: idx,
       drug: {
         ...drug,
-        // Si el drug no tiene validation_status propio, heredar el de la prescripción
         validation_status: drug.validation_status || (rx.drugs.length === 1 ? rx.validation_status : undefined),
       },
       patient_name: rx.patient_name,
@@ -55,7 +54,9 @@ export default function ValidacionMezclas() {
       cycle_number: rx.cycle_number,
       day_of_cycle: rx.day_of_cycle,
       patient_bsa: rx.patient_bsa,
-      patient_weight: rx.patient_weight
+      patient_weight: rx.patient_weight,
+      prescription_type: rx.prescription_type || "Oncologico",
+      npt_components: rx.npt_components
     }))
   );
 
@@ -239,7 +240,18 @@ export default function ValidacionMezclas() {
                       );
                     })()}
                   </div>
-                  <p className="text-xs text-muted-foreground">{mix.drug.drug_name}</p>
+                  <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                    <p className="text-xs text-muted-foreground">{mix.drug.drug_name}</p>
+                    {mix.prescription_type && mix.prescription_type !== "Oncologico" && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                        mix.prescription_type === "Antibiotico" ? "bg-emerald-100 text-emerald-700" :
+                        mix.prescription_type === "NPT" ? "bg-amber-100 text-amber-700" :
+                        "bg-violet-100 text-violet-700"
+                      }`}>
+                        {mix.prescription_type === "Antibiotico" ? "ATB" : mix.prescription_type}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {mix.cycle_number ? `C${mix.cycle_number} D${mix.day_of_cycle}` : "—"}
                   </p>
@@ -278,6 +290,10 @@ export default function ValidacionMezclas() {
                 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-muted/30 rounded text-xs">
                   <div>
+                    <p className="text-muted-foreground mb-0.5">Tipo</p>
+                    <p className="font-medium">{selectedMix.prescription_type === "Antibiotico" ? "Antibiótico IV" : selectedMix.prescription_type === "NPT" ? "NPT" : "Oncológico"}</p>
+                  </div>
+                  <div>
                     <p className="text-muted-foreground mb-0.5">Medicamento</p>
                     <p className="font-medium">{selectedMix.drug.drug_name}</p>
                   </div>
@@ -293,10 +309,42 @@ export default function ValidacionMezclas() {
                     <p className="text-muted-foreground mb-0.5">Vía</p>
                     <p className="font-medium">{selectedMix.drug.route}</p>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground mb-0.5">Concentración</p>
-                    <p className="font-mono">{selectedMix.drug.dose_per_unit} {selectedMix.drug.dose_basis}</p>
-                  </div>
+                  {selectedMix.prescription_type === "Antibiotico" ? (
+                    <>
+                      <div>
+                        <p className="text-muted-foreground mb-0.5">Frecuencia</p>
+                        <p className="font-medium">{selectedMix.drug.frequency || "—"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-0.5">Duración</p>
+                        <p className="font-medium">{selectedMix.drug.duration_days || "—"} días</p>
+                      </div>
+                    </>
+                  ) : selectedMix.prescription_type === "NPT" ? (
+                    <>
+                      <div>
+                        <p className="text-muted-foreground mb-0.5">Kcal totales</p>
+                        <p className="font-mono font-medium text-amber-700">{selectedMix.npt_components?.kcal_total || "—"} kcal</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-0.5">Osmolaridad</p>
+                        <p className={`font-mono font-medium ${(selectedMix.npt_components?.osmolarity_mosm_l || 0) > 900 ? "text-red-600" : "text-foreground"}`}>
+                          {selectedMix.npt_components?.osmolarity_mosm_l || "—"} mOsm/L
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <p className="text-muted-foreground mb-0.5">Concentración</p>
+                        <p className="font-mono">{selectedMix.drug.dose_per_unit} {selectedMix.drug.dose_basis}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-0.5">Varianza</p>
+                        <p className="font-mono">{selectedMix.drug.variance_percent ? `${selectedMix.drug.variance_percent}%` : "—"}</p>
+                      </div>
+                    </>
+                  )}
                   <div>
                     <p className="text-muted-foreground mb-0.5">Tipo Solución</p>
                     <p className="font-medium">{selectedMix.drug.solution_type || selectedMix.drug.diluent || "—"}</p>
@@ -304,10 +352,6 @@ export default function ValidacionMezclas() {
                   <div>
                     <p className="text-muted-foreground mb-0.5">Infusión</p>
                     <p className="font-medium">{selectedMix.drug.infusion_time}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground mb-0.5">Varianza</p>
-                    <p className="font-mono">{selectedMix.drug.variance_percent ? `${selectedMix.drug.variance_percent}%` : "—"}</p>
                   </div>
                 </div>
 

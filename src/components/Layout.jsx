@@ -58,7 +58,7 @@ export default function Layout() {
             </div>
             <div>
               <h1 className="font-semibold text-sm tracking-tight">Centro de Mezclas</h1>
-              <p className="text-xs text-muted-foreground">Validación QT</p>
+              <p className="text-xs text-muted-foreground">QT · ATB · NPT</p>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function Layout() {
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <FlaskConical className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="font-semibold text-sm">Centro de Mezclas</span>
+          <span className="font-semibold text-sm">Centro de Mezclas · QT · ATB · NPT</span>
         </div>
         <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2">
           <div className="space-y-1.5">

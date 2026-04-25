@@ -126,6 +126,7 @@ export default function Etiquetas() {
                 <div class="dose">${drug.prescribed_dose ?? drug.calculated_dose ?? "—"} ${drug.dose_unit || "mg"}</div>
                 <div class="row">Vía: <b>${drug.route || "—"}</b></div>
                 <div class="row">Inf: <b>${drug.infusion_time || "—"}</b></div>
+                ${drug.frequency ? `<div class="row">Frec: <b>${drug.frequency}</b>${drug.duration_days ? ` · <b>${drug.duration_days} días</b>` : ""}</div>` : ""}
                 <div class="row">Solución: <b>${drug.solution_type || drug.diluent || "—"}</b>${(drug.prescribed_volume || drug.volume_ml) ? ` <b>${drug.prescribed_volume || drug.volume_ml} mL</b>` : ""}</div>
                 <div class="row">Recipiente: <b>${drug.container_material || "—"}</b></div>
               </div>
@@ -156,7 +157,7 @@ export default function Etiquetas() {
               </div>
               <div>
                 <div class="sub">${rx.protocol_name}</div>
-                <div class="sub">C${rx.cycle_number} D${rx.day_of_cycle}</div>
+                ${rx.prescription_type === "Oncologico" || !rx.prescription_type ? `<div class="sub">C${rx.cycle_number} D${rx.day_of_cycle}</div>` : `<div class="sub">${rx.prescription_type === "Antibiotico" ? "Antibiótico IV" : "NPT"}</div>`}
                 <div class="sub">Médico: ${rx.prescribing_doctor}</div>
                 <div class="sub">Fecha: ${formatDate(rx.prescription_date || rx.created_date)}</div>
               </div>
@@ -218,6 +219,7 @@ export default function Etiquetas() {
                     </div>
                     <p className="font-bold text-primary">{drug.prescribed_dose ?? drug.calculated_dose ?? "—"} {drug.dose_unit || "mg"}</p>
                     <p className="text-[10px] text-muted-foreground">{drug.route} · {drug.infusion_time}</p>
+                    {drug.frequency && <p className="text-[10px] text-muted-foreground font-medium">{drug.frequency}{drug.duration_days ? ` · ${drug.duration_days} días` : ""}</p>}
                     <p className="text-[10px] text-muted-foreground">{drug.solution_type || drug.diluent || "—"}{(drug.prescribed_volume || drug.volume_ml) ? ` · ${drug.prescribed_volume || drug.volume_ml} mL` : ""}</p>
                     <p className="text-[10px] text-muted-foreground">{drug.container_material || "—"}</p>
                     <p className="text-[9px] font-mono text-muted-foreground">Folio: {folio}</p>
@@ -263,7 +265,10 @@ export default function Etiquetas() {
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-[9px] text-muted-foreground">{rx.protocol_name}</p>
-                    <p className="text-[9px] text-muted-foreground">C{rx.cycle_number} D{rx.day_of_cycle}</p>
+                    {(rx.prescription_type === "Oncologico" || !rx.prescription_type)
+                      ? <p className="text-[9px] text-muted-foreground">C{rx.cycle_number} D{rx.day_of_cycle}</p>
+                      : <p className={`text-[9px] font-medium ${rx.prescription_type === "Antibiotico" ? "text-emerald-700" : "text-amber-700"}`}>{rx.prescription_type === "Antibiotico" ? "ATB IV" : "NPT"}</p>
+                    }
                     <p className="text-[9px] text-muted-foreground">Dr. {rx.prescribing_doctor}</p>
                     <p className="text-[9px] text-muted-foreground">{formatDate(rx.prescription_date || rx.created_date)}</p>
                   </div>

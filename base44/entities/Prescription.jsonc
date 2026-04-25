@@ -2,6 +2,16 @@
   "name": "Prescription",
   "type": "object",
   "properties": {
+    "prescription_type": {
+      "type": "string",
+      "enum": [
+        "Oncologico",
+        "Antibiotico",
+        "NPT"
+      ],
+      "default": "Oncologico",
+      "description": "Tipo de prescripci\u00f3n"
+    },
     "patient_id": {
       "type": "string",
       "description": "ID del paciente"
@@ -20,7 +30,7 @@
     },
     "protocol_name": {
       "type": "string",
-      "description": "Nombre del protocolo"
+      "description": "Nombre del protocolo o indicaci\u00f3n"
     },
     "cycle_number": {
       "type": "number",
@@ -69,6 +79,9 @@
           "volume_ml": {
             "type": "number"
           },
+          "prescribed_volume": {
+            "type": "number"
+          },
           "is_valid": {
             "type": "boolean"
           },
@@ -77,6 +90,113 @@
           },
           "validation_notes": {
             "type": "string"
+          },
+          "solution_type": {
+            "type": "string"
+          },
+          "container_material": {
+            "type": "string"
+          },
+          "vial_size": {
+            "type": "number"
+          },
+          "vial_unit": {
+            "type": "string"
+          },
+          "validation_status": {
+            "type": "string"
+          },
+          "validated_by": {
+            "type": "string"
+          },
+          "validation_date": {
+            "type": "string"
+          },
+          "frequency": {
+            "type": "string"
+          },
+          "duration_days": {
+            "type": "number"
+          },
+          "dose_mg_kg": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "npt_components": {
+      "type": "object",
+      "description": "Componentes de NPT",
+      "properties": {
+        "glucose_percent": {
+          "type": "number"
+        },
+        "glucose_ml": {
+          "type": "number"
+        },
+        "aminoacids_percent": {
+          "type": "number"
+        },
+        "aminoacids_ml": {
+          "type": "number"
+        },
+        "lipids_percent": {
+          "type": "number"
+        },
+        "lipids_ml": {
+          "type": "number"
+        },
+        "total_volume_ml": {
+          "type": "number"
+        },
+        "infusion_rate_ml_h": {
+          "type": "number"
+        },
+        "infusion_hours": {
+          "type": "number"
+        },
+        "kcal_total": {
+          "type": "number"
+        },
+        "kcal_kg": {
+          "type": "number"
+        },
+        "protein_g": {
+          "type": "number"
+        },
+        "protein_g_kg": {
+          "type": "number"
+        },
+        "osmolarity_mosm_l": {
+          "type": "number"
+        },
+        "route": {
+          "type": "string"
+        },
+        "electrolytes": {
+          "type": "object",
+          "properties": {
+            "nacl_meq": {
+              "type": "number"
+            },
+            "kcl_meq": {
+              "type": "number"
+            },
+            "calcium_gluconate_ml": {
+              "type": "number"
+            },
+            "magnesium_sulfate_ml": {
+              "type": "number"
+            },
+            "kh2po4_ml": {
+              "type": "number"
+            },
+            "multivitamins_ml": {
+              "type": "number"
+            },
+            "trace_elements_ml": {
+              "type": "number"
+            }
           }
         }
       }
@@ -85,6 +205,12 @@
       "type": "number"
     },
     "patient_weight": {
+      "type": "number"
+    },
+    "patient_nss": {
+      "type": "string"
+    },
+    "patient_height": {
       "type": "number"
     },
     "validation_status": {
@@ -114,8 +240,7 @@
       }
     },
     "inspected": {
-      "type": "boolean",
-      "description": "Mezcla inspeccionada por farmac\u00e9utico"
+      "type": "boolean"
     },
     "inspected_by": {
       "type": "string"
@@ -125,8 +250,7 @@
       "format": "date-time"
     },
     "delivered": {
-      "type": "boolean",
-      "description": "Mezcla entregada al \u00e1rea cl\u00ednica"
+      "type": "boolean"
     },
     "delivered_by": {
       "type": "string"
@@ -136,22 +260,18 @@
       "format": "date-time"
     },
     "delivered_to": {
-      "type": "string",
-      "description": "Servicio o enfermera que recibe"
+      "type": "string"
     },
     "recipe_html": {
-      "type": "string",
-      "description": "Receta en HTML para imprimir"
+      "type": "string"
     },
     "clinical_feedback": {
       "type": "array",
-      "description": "Historial de feedback cl\u00ednico entre m\u00e9dico y farmac\u00e9utico",
       "items": {
         "type": "object",
         "properties": {
           "from_role": {
-            "type": "string",
-            "description": "Rol de quien comenta: medico, farmaceutico"
+            "type": "string"
           },
           "from_name": {
             "type": "string"
@@ -168,7 +288,6 @@
     },
     "state_history": {
       "type": "array",
-      "description": "Historial de cambios de estado",
       "items": {
         "type": "object",
         "properties": {
@@ -194,12 +313,10 @@
         "Pendiente",
         "Aplicada",
         "Rechazada"
-      ],
-      "description": "Estado de aplicaci\u00f3n de la mezcla por el enfermero"
+      ]
     },
     "applied_by": {
-      "type": "string",
-      "description": "Enfermero que aplic\u00f3"
+      "type": "string"
     },
     "applied_date": {
       "type": "string",
@@ -211,16 +328,13 @@
         "Exitosa",
         "Problemas",
         "Reacci\u00f3n adversa"
-      ],
-      "description": "Resultado de la aplicaci\u00f3n"
+      ]
     },
     "application_notes": {
-      "type": "string",
-      "description": "Detalles del resultado (problemas o reacciones)"
+      "type": "string"
     },
     "adverse_reaction_type": {
-      "type": "string",
-      "description": "Tipo de reacci\u00f3n adversa si aplica"
+      "type": "string"
     },
     "adverse_reaction_severity": {
       "type": "string",
@@ -229,14 +343,19 @@
         "Moderada",
         "Severa"
       ]
+    },
+    "cie10_code": {
+      "type": "string"
+    },
+    "diagnosis": {
+      "type": "string"
     }
   },
   "required": [
     "patient_id",
     "patient_name",
     "prescribing_doctor",
-    "protocol_name",
-    "drugs"
+    "protocol_name"
   ],
   "rls": {
     "create": {},

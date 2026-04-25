@@ -30,11 +30,18 @@ export default function Preparacion() {
     const el = document.getElementById(`prep-${rx.id}`);
     if (!el) return;
     const win = window.open("", "_blank");
+    const typeLabel = rx.prescription_type === "Antibiotico" ? "Antibiótico IV" : rx.prescription_type === "NPT" ? "Nutrición Parenteral Total" : "Quimioterapia";
+    const metaExtra = rx.prescription_type === "Oncologico"
+      ? `Protocolo: ${rx.protocol_name} &nbsp;|&nbsp; Ciclo C${rx.cycle_number} D${rx.day_of_cycle} &nbsp;|&nbsp; `
+      : rx.prescription_type === "NPT"
+      ? `Vol. Total: ${rx.npt_components?.total_volume_ml || "—"} mL &nbsp;|&nbsp; Kcal: ${rx.npt_components?.kcal_total || "—"} &nbsp;|&nbsp; `
+      : `Indicación: ${rx.protocol_name} &nbsp;|&nbsp; `;
     win.document.write(`
       <html><head><title>Preparación - ${rx.patient_name}</title>
       <style>
         body { font-family: Arial, sans-serif; font-size: 13px; color: #111; margin: 24px; }
         h1 { font-size: 18px; margin-bottom: 4px; }
+        .type-badge { display: inline-block; font-size: 11px; font-weight: bold; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; }
         .meta { color: #555; font-size: 12px; margin-bottom: 20px; }
         .drug-block { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
         .drug-header { background: #f4f4f4; padding: 10px 14px; font-weight: bold; font-size: 13px; border-bottom: 1px solid #ddd; }
@@ -54,11 +61,12 @@ export default function Preparacion() {
         @media print { body { margin: 10px; } }
       </style></head><body>
       <h1>Hoja de Preparación</h1>
+      <div class="type-badge">${typeLabel}</div>
       <div class="meta">
         Paciente: <strong>${rx.patient_name}</strong> &nbsp;|&nbsp;
-        SCT: ${rx.patient_bsa?.toFixed(2)} m² &nbsp;|&nbsp; Peso: ${rx.patient_weight} kg<br/>
+        Peso: ${rx.patient_weight} kg${rx.patient_bsa ? ` &nbsp;|&nbsp; SCT: ${rx.patient_bsa?.toFixed(2)} m²` : ""}<br/>
         Médico: ${rx.prescribing_doctor} &nbsp;|&nbsp; Cédula: ${rx.doctor_license}<br/>
-        Protocolo: ${rx.protocol_name} &nbsp;|&nbsp; Ciclo C${rx.cycle_number} D${rx.day_of_cycle} &nbsp;|&nbsp; Fecha: ${formatDate(rx.prescription_date)}
+        ${metaExtra}Fecha: ${formatDate(rx.prescription_date)}
       </div>
       ${el.innerHTML}
       </body></html>
@@ -99,9 +107,18 @@ export default function Preparacion() {
             <div key={rx.id} className="bg-card rounded-xl border border-border overflow-hidden">
               <div className="px-6 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <p className="font-semibold text-sm">{rx.patient_name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm">{rx.patient_name}</p>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                      rx.prescription_type === "Antibiotico" ? "bg-emerald-100 text-emerald-700" :
+                      rx.prescription_type === "NPT" ? "bg-amber-100 text-amber-700" :
+                      "bg-violet-100 text-violet-700"
+                    }`}>
+                      {rx.prescription_type === "Antibiotico" ? "ATB" : rx.prescription_type === "NPT" ? "NPT" : "QT"}
+                    </span>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {rx.protocol_name} · C{rx.cycle_number} D{rx.day_of_cycle} · {formatDate(rx.prescription_date || rx.created_date)} · Dr. {rx.prescribing_doctor}
+                    {rx.protocol_name} · {rx.prescription_type === "Oncologico" ? `C${rx.cycle_number} D${rx.day_of_cycle} · ` : ""}{formatDate(rx.prescription_date || rx.created_date)} · Dr. {rx.prescribing_doctor}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
