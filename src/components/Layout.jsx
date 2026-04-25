@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 
 const ALL_NAV_ITEMS = [
   // Panel general
-  { path: "/", label: "Panel", icon: LayoutDashboard, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "preparador", "mesa_atencion", "encargado_calidad"] },
+  { path: "/", label: "Panel de Control", icon: LayoutDashboard, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "preparador", "mesa_atencion", "encargado_calidad"] },
 
   // Médico
   { path: "/nueva-prescripcion", label: "Nueva Prescripción", icon: FilePlus, roles: ["admin", "jefe_centro", "medico"] },
