@@ -15,6 +15,7 @@ import NPTForm from "@/components/NPTForm";
 import { calculateDose, validateDose, generateAlerts } from "@/lib/chemoProtocols";
 import DrugInteractionAlert from "@/components/DrugInteractionAlert";
 import { detectInteractions } from "@/lib/drugInteractions";
+import DoseAdjustmentPanel from "@/components/DoseAdjustmentPanel";
 import { calculateNPT, validateNPT } from "@/lib/nptCalculations";
 
 const PRESCRIPTION_TYPES = [
@@ -595,6 +596,24 @@ export default function NewPrescription() {
             <div><span className="text-muted-foreground">Peso: </span><span className="font-mono font-medium">{patient?.weight_kg} kg</span></div>
             <div><span className="text-muted-foreground">Tipo: </span><span className="font-medium">{typeConfig?.label}</span></div>
           </div>
+
+          {/* ── Ajuste renal/hepático Oncológico ── */}
+          {prescriptionType === "Oncologico" && drugDoses.length > 0 && (
+            <div className="bg-card rounded-xl border border-border p-6 space-y-3">
+              <div>
+                <h2 className="font-semibold text-sm">Ajuste de Dosis por Función Renal/Hepática</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Ingrese valores de laboratorio actuales para obtener recomendaciones personalizadas basadas en guías NCCN.</p>
+              </div>
+              <DoseAdjustmentPanel
+                drugs={drugDoses}
+                patient={patient}
+                onApplyAdjustment={(drugName, adjustedDose) => {
+                  const idx = drugDoses.findIndex(d => d.drug_name === drugName);
+                  if (idx >= 0) handleDoseChange(idx, adjustedDose);
+                }}
+              />
+            </div>
+          )}
 
           {/* ── Revisión Oncológico ── */}
           {prescriptionType === "Oncologico" && (

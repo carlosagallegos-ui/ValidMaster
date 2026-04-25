@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Package, Pill, BarChart3, FileJson, FileText, Printer, AlertTriangle, Activity, PieChart, LayoutDashboard } from "lucide-react";
 import { PieChart as RechartsPie, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import InformesDashboard from "@/components/InformesDashboard";
 
 const COLORS = ["#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
@@ -17,6 +18,7 @@ export default function Informes() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [medications, setMedications] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
+  const [adverseEvents, setAdverseEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -24,10 +26,12 @@ export default function Informes() {
   useEffect(() => {
     Promise.all([
       base44.entities.Medication.list("-received_date", 300),
-      base44.entities.Prescription.list("-created_date", 500)
-    ]).then(([meds, rxs]) => {
+      base44.entities.Prescription.list("-created_date", 500),
+      base44.entities.AdverseEvent.list("-event_date", 500)
+    ]).then(([meds, rxs, aevents]) => {
       setMedications(meds);
       setPrescriptions(rxs);
+      setAdverseEvents(aevents);
       setLoading(false);
     });
   }, []);
@@ -156,72 +160,11 @@ export default function Informes() {
 
       {/* ── DASHBOARD ── */}
       {activeTab === "dashboard" && (
-        <div className="space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {[
-              { label: "Total Prescripciones", value: totalRx, color: "text-primary", bg: "bg-primary/10" },
-              { label: "Validadas", value: validadas, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Pendientes", value: pendientes, color: "text-amber-600", bg: "bg-amber-50" },
-              { label: "Rechazadas", value: rechazadas, color: "text-red-600", bg: "bg-red-50" },
-              { label: "Eventos Adversos", value: adversos, color: "text-purple-600", bg: "bg-purple-50" },
-              { label: "Medicamentos Disponibles", value: disponibleMeds, color: "text-teal-600", bg: "bg-teal-50" },
-            ].map(stat => (
-              <div key={stat.label} className="bg-card rounded-xl border border-border p-4">
-                <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Estado de prescripciones */}
-            <div className="bg-card rounded-xl border border-border p-6">
-              <h3 className="font-semibold text-sm mb-4">Estado de Prescripciones</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <RechartsPie>
-                  <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                    {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip />
-                </RechartsPie>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Mezclas por protocolo */}
-            <div className="bg-card rounded-xl border border-border p-6">
-              <h3 className="font-semibold text-sm mb-4">Mezclas por Protocolo (Top 8)</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={protocolData} layout="vertical" margin={{ left: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" name="Mezclas" fill="#0ea5e9" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Inventory summary */}
-          <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-sm mb-3">Resumen de Inventario</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-              {[
-                { label: "Total registros", value: medications.length },
-                { label: "Disponibles", value: disponibleMeds },
-                { label: "Agotados", value: agotadoMeds },
-                { label: "Cuarentena / Caducado", value: medications.filter(m => m.status === "Cuarentena" || m.status === "Caducado").length },
-              ].map(s => (
-                <div key={s.label} className="bg-muted/30 rounded-lg p-3">
-                  <p className="text-2xl font-bold text-primary">{s.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <InformesDashboard
+          prescriptions={prescriptions}
+          medications={medications}
+          adverseEvents={adverseEvents}
+        />
       )}
 
       {/* ── EXISTENCIAS ── */}
