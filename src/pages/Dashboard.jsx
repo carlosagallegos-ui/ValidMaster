@@ -42,7 +42,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Panel de Control</h1>
-        <p className="text-muted-foreground text-sm mt-1">Centro de Mezclas Oncológicas · ValidMaster</p>
+        <p className="text-muted-foreground text-sm mt-1">Centro de Mezclas Oncológicas · SIVF-ME</p>
       </div>
 
       {/* Stats rápidas */}
