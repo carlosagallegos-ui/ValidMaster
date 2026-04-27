@@ -1,0 +1,24 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "jefe_centro",
+        "medico",
+        "validador",
+        "coordinador",
+        "encargado_preparacion",
+        "preparador",
+        "encargado_calidad",
+        "mesa_atencion"
+      ],
+      "description": "Roles: admin, jefe_centro=jefe del centro de mezclas, medico=crea prescripciones, validador=valida prescripciones, coordinador=asigna preparaciones y surte medicamentos, encargado_preparacion=encargado del \u00e1rea de preparaci\u00f3n, preparador=prepara mezclas, encargado_calidad=revisi\u00f3n de calidad, mesa_atencion=revisi\u00f3n y salida de mezclas"
+    }
+  },
+  "required": [
+    "role"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "name": "Protocol",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del protocolo"
+    },
+    "indication": {
+      "type": "string",
+      "description": "Indicaci\u00f3n oncol\u00f3gica"
+    },
+    "cycle_days": {
+      "type": "number",
+      "description": "D\u00edas entre ciclos"
+    },
+    "total_cycles": {
+      "type": "number",
+      "description": "Total de ciclos"
+    },
+    "drugs": {
+      "type": "array",
+      "description": "Medicamentos del protocolo",
+      "items": {
+        "type": "object",
+        "properties": {
+          "drug_name": {
+            "type": "string"
+          },
+          "dose_per_unit": {
+            "type": "number"
+          },
+          "dose_basis": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "infusion_time": {
+            "type": "string"
+          },
+          "diluent": {
+            "type": "string"
+          },
+          "volume_ml": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas generales"
+    }
+  },
+  "required": [
+    "name",
+    "indication"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

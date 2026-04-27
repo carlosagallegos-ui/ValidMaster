@@ -1,0 +1,86 @@
+{
+  "name": "Medication",
+  "type": "object",
+  "properties": {
+    "drug_name": {
+      "type": "string",
+      "description": "Nombre del medicamento"
+    },
+    "concentration": {
+      "type": "number",
+      "description": "Concentraci\u00f3n por frasco/ampolleta"
+    },
+    "concentration_unit": {
+      "type": "string",
+      "description": "Unidad de concentraci\u00f3n (mg, mg/mL, UI, etc.)"
+    },
+    "vial_volume_ml": {
+      "type": "number",
+      "description": "Volumen del frasco en mL"
+    },
+    "presentation": {
+      "type": "string",
+      "description": "Presentaci\u00f3n (Frasco ampolleta, Ampolleta, Vial, etc.)"
+    },
+    "lot_number": {
+      "type": "string",
+      "description": "N\u00famero de lote"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de caducidad"
+    },
+    "quantity_received": {
+      "type": "number",
+      "description": "Cantidad recibida (frascos)"
+    },
+    "quantity_available": {
+      "type": "number",
+      "description": "Cantidad disponible (frascos)"
+    },
+    "supplier": {
+      "type": "string",
+      "description": "Proveedor"
+    },
+    "received_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de recepci\u00f3n"
+    },
+    "storage_conditions": {
+      "type": "string",
+      "description": "Condiciones de almacenamiento"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observaciones"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Disponible",
+        "Agotado",
+        "Cuarentena",
+        "Caducado"
+      ],
+      "description": "Estado del medicamento"
+    }
+  },
+  "required": [
+    "drug_name",
+    "concentration",
+    "concentration_unit",
+    "quantity_received"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
