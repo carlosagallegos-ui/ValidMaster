@@ -1,0 +1,9 @@
+{
+  "name": "SIVF-ME (Sistema Integral de Valoraci\u00f3n de Mezclas Est\u00e9riles)",
+  "site": {
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "serveCommand": "npm run dev",
+    "outputDirectory": "./dist"
+  }
+}
