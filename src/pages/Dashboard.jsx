@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import InformesDashboard from "@/components/InformesDashboard";
-import { ClipboardList, CheckCircle, Clock, XCircle, TestTube, AlertTriangle, CalendarX } from "lucide-react";
+import { ClipboardList, CheckCircle, Clock, XCircle, TestTube, AlertTriangle, CalendarX, Truck } from "lucide-react";
 
 export default function Dashboard() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -36,6 +36,7 @@ export default function Dashboard() {
     { label: "En Revisión", value: prescriptions.filter(p => p.validation_status === "Ajustada").length, icon: TestTube, color: "text-blue-600", bg: "bg-blue-50" },
     { label: "Validadas", value: prescriptions.filter(p => p.validation_status === "Validada").length, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
     { label: "Rechazadas", value: prescriptions.filter(p => p.validation_status === "Rechazada").length, icon: XCircle, color: "text-red-600", bg: "bg-red-50" },
+    { label: "Entregadas", value: prescriptions.filter(p => p.delivered === true).length, icon: Truck, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
   return (
@@ -46,7 +47,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats rápidas */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         {stats.map(stat => {
           const Icon = stat.icon;
           return (
