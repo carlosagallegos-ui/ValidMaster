@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { FlaskConical, AlertTriangle, CheckCircle } from "lucide-react";
-import PrepLotTable from "@/components/PrepLotTable";
 
 function calcPrep(drug, medications) {
   // Normalize: strip " bolo" / " infusión" suffixes for inventory lookup
@@ -41,7 +40,7 @@ function calcPrep(drug, medications) {
   return { prescribedDose, volumeContainer, concMgPerMl, vialVolumeMl, drugVolumeMl, withdrawFromContainer, solutionRemaining, finalVolume, invInfo, isBolo };
 }
 
-export default function PreparationSheet({ drugs, prescription }) {
+export default function PreparationSheet({ drugs }) {
   const [medications, setMedications] = useState([]);
 
   useEffect(() => {
@@ -50,7 +49,6 @@ export default function PreparationSheet({ drugs, prescription }) {
 
   return (
     <div className="space-y-4">
-      <PrepLotTable prescription={prescription} drugs={drugs} />
       {drugs?.map((drug, i) => {
         const p = calcPrep(drug, medications);
         const hasFullCalc = p.drugVolumeMl !== null && (p.volumeContainer > 0 || p.isBolo);

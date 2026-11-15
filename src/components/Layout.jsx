@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect } from "react";
 
@@ -18,6 +18,7 @@ const ALL_NAV_ITEMS = [
   // Coordinador / Encargado de Preparación
   { path: "/frascos", label: "Frascos por Mezcla", icon: TestTube, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion"] },
   { path: "/preparacion", label: "Hojas de Preparación", icon: Beaker, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador"] },
+  { path: "/lotes-preparacion", label: "Lotes de Preparación", icon: ClipboardCheck, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador"] },
   { path: "/medicamentos", label: "Medicamentos", icon: Package, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion"] },
 
   // Mesa de atención / Encargado de calidad

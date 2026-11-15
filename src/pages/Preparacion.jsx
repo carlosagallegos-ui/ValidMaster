@@ -139,7 +139,7 @@ export default function Preparacion() {
               </div>
               {selected === rx.id && (
                 <div className="p-4" id={`prep-${rx.id}`}>
-                  <PreparationSheet drugs={rx.drugs} prescription={rx} />
+                  <PreparationSheet drugs={rx.drugs} />
                 </div>
               )}
             </div>
