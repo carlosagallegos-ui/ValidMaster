@@ -73,7 +73,7 @@ const EMPTY = {
   lot_number: "", expiration_date: "", quantity_received: "",
   quantity_available: "", supplier: "",
   received_date: new Date().toISOString().split("T")[0],
-  storage_conditions: "", notes: "", status: "Disponible"
+  area: "", storage_conditions: "", notes: "", status: "Disponible"
 };
 
 export default function Medications() {
@@ -334,6 +334,10 @@ export default function Medications() {
             <div>
               <Label>Proveedor</Label>
               <Input value={form.supplier} onChange={e => set("supplier", e.target.value.toUpperCase())} />
+            </div>
+            <div className="col-span-2">
+              <Label>Área de resguardo del lote</Label>
+              <Input value={form.area || ""} onChange={e => set("area", e.target.value.toUpperCase())} placeholder="Ej. REFRIGERACIÓN, ALMACÉN GENERAL..." />
             </div>
             <div className="col-span-2">
               <Label>Condiciones de almacenamiento</Label>

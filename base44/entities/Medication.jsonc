@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Nombre del medicamento"
     },
+    "area": {
+      "type": "string",
+      "description": "\u00c1rea f\u00edsica donde se resguarda el lote (almac\u00e9n, refrigeraci\u00f3n, preparaci\u00f3n, cuarentena, etc.)"
+    },
     "concentration": {
       "type": "number",
       "description": "Concentraci\u00f3n por frasco/ampolleta"

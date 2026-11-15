@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, LayoutList } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect } from "react";
 
@@ -19,6 +19,7 @@ const ALL_NAV_ITEMS = [
   { path: "/frascos", label: "Frascos por Mezcla", icon: TestTube, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion"] },
   { path: "/preparacion", label: "Hojas de Preparación", icon: Beaker, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador"] },
   { path: "/medicamentos", label: "Medicamentos", icon: Package, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion"] },
+  { path: "/hojas-lotes", label: "Hoja de Lotes por Área", icon: LayoutList, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "encargado_calidad", "validador"] },
 
   // Mesa de atención / Encargado de calidad
   { path: "/salidas", label: "Salidas de Mezclas", icon: ArrowUpFromLine, roles: ["admin", "jefe_centro", "mesa_atencion", "encargado_calidad"] },
