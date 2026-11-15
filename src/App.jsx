@@ -13,7 +13,6 @@ import Prescriptions from './pages/Prescriptions';
 import Protocols from './pages/Protocols';
 import Frascos from './pages/Frascos';
 import Medications from './pages/Medications';
-import HojasLotes from './pages/HojasLotes';
 import Patients from './pages/Patients';
 import Etiquetas from './pages/Etiquetas';
 import Preparacion from './pages/Preparacion';
@@ -59,7 +58,6 @@ const AuthenticatedApp = () => {
         <Route path="/prescripciones" element={<Prescriptions />} />
         <Route path="/frascos" element={<Frascos />} />
         <Route path="/medicamentos" element={<Medications />} />
-        <Route path="/hojas-lotes" element={<HojasLotes />} />
         <Route path="/pacientes" element={<Patients />} />
         <Route path="/etiquetas" element={<Etiquetas />} />
         <Route path="/preparacion" element={<Preparacion />} />

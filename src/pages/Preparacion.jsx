@@ -58,6 +58,9 @@ export default function Preparacion() {
         .grid3 .label { font-size: 10px; color: #777; }
         .grid3 .val { font-weight: bold; color: #0369a1; font-size: 16px; }
         .grid3 .sub { font-size: 10px; color: #888; }
+        table.lotes { width: 100%; border-collapse: collapse; margin-top: 4px; }
+        table.lotes th, table.lotes td { border: 1px solid #ddd; padding: 5px 6px; font-size: 11px; text-align: left; }
+        table.lotes th { background: #f4f4f4; text-transform: uppercase; font-size: 10px; }
         @media print { body { margin: 10px; } }
       </style></head><body>
       <h1>Hoja de Preparación</h1>

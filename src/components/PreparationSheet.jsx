@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { FlaskConical, AlertTriangle, CheckCircle } from "lucide-react";
+import PrepLots from "@/components/PrepLots";
 
 function calcPrep(drug, medications) {
   // Normalize: strip " bolo" / " infusión" suffixes for inventory lookup
@@ -180,6 +181,7 @@ export default function PreparationSheet({ drugs }) {
           </div>
         );
       })}
+      <PrepLots drugs={drugs} medications={medications} />
     </div>
   );
 }
