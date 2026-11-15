@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { FlaskConical, AlertTriangle, CheckCircle } from "lucide-react";
-import PrepLots from "@/components/PrepLots";
+import DrugLotInfo from "@/components/DrugLotInfo";
 
 function calcPrep(drug, medications) {
   // Normalize: strip " bolo" / " infusión" suffixes for inventory lookup
   const normalize = name => (name || "").replace(/ bolo$/i, "").replace(/ infusi[oó]n$/i, "").trim().toLowerCase();
   const drugNorm = normalize(drug.drug_name);
-  const inv = medications.find(m =>
-    normalize(m.drug_name) === drugNorm && m.status !== "Caducado"
-  );
+  const lots = medications
+    .filter(m => normalize(m.drug_name) === drugNorm && m.status !== "Caducado")
+    .sort((a, b) => ((a.expiration_date || "9999-12-31") > (b.expiration_date || "9999-12-31") ? 1 : -1));
+  const inv = lots[0] || null;
 
   const prescribedDose = drug.prescribed_dose || drug.calculated_dose || 0;
   const volumeContainer = drug.prescribed_volume || drug.volume_ml || 0;
@@ -37,7 +38,7 @@ function calcPrep(drug, medications) {
   const solutionRemaining = withdrawFromContainer !== null ? Math.round((volumeContainer - withdrawFromContainer) * 100) / 100 : null;
   const finalVolume = isBolo ? drugVolumeMl : (volumeContainer || null);
 
-  return { prescribedDose, volumeContainer, concMgPerMl, vialVolumeMl, drugVolumeMl, withdrawFromContainer, solutionRemaining, finalVolume, invInfo, isBolo };
+  return { prescribedDose, volumeContainer, concMgPerMl, vialVolumeMl, drugVolumeMl, withdrawFromContainer, solutionRemaining, finalVolume, invInfo, isBolo, lote: inv };
 }
 
 export default function PreparationSheet({ drugs }) {
@@ -95,6 +96,8 @@ export default function PreparationSheet({ drugs }) {
                   <p className="font-mono font-bold text-base">{p.invInfo?.presentation || "—"}</p>
                 </div>
               </div>
+
+              <DrugLotInfo lote={p.lote} />
 
               {/* Preparation steps */}
               {hasFullCalc ? (
@@ -181,7 +184,6 @@ export default function PreparationSheet({ drugs }) {
           </div>
         );
       })}
-      <PrepLots drugs={drugs} medications={medications} />
     </div>
   );
 }
