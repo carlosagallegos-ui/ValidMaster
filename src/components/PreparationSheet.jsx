@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { FlaskConical, AlertTriangle, CheckCircle } from "lucide-react";
-import DrugLotInfo from "@/components/DrugLotInfo";
+import PrepLotTable from "@/components/PrepLotTable";
 
 function calcPrep(drug, medications) {
   // Normalize: strip " bolo" / " infusión" suffixes for inventory lookup
@@ -38,10 +38,10 @@ function calcPrep(drug, medications) {
   const solutionRemaining = withdrawFromContainer !== null ? Math.round((volumeContainer - withdrawFromContainer) * 100) / 100 : null;
   const finalVolume = isBolo ? drugVolumeMl : (volumeContainer || null);
 
-  return { prescribedDose, volumeContainer, concMgPerMl, vialVolumeMl, drugVolumeMl, withdrawFromContainer, solutionRemaining, finalVolume, invInfo, isBolo, lote: inv };
+  return { prescribedDose, volumeContainer, concMgPerMl, vialVolumeMl, drugVolumeMl, withdrawFromContainer, solutionRemaining, finalVolume, invInfo, isBolo };
 }
 
-export default function PreparationSheet({ drugs }) {
+export default function PreparationSheet({ drugs, prescription }) {
   const [medications, setMedications] = useState([]);
 
   useEffect(() => {
@@ -50,6 +50,7 @@ export default function PreparationSheet({ drugs }) {
 
   return (
     <div className="space-y-4">
+      <PrepLotTable prescription={prescription} drugs={drugs} />
       {drugs?.map((drug, i) => {
         const p = calcPrep(drug, medications);
         const hasFullCalc = p.drugVolumeMl !== null && (p.volumeContainer > 0 || p.isBolo);
@@ -96,8 +97,6 @@ export default function PreparationSheet({ drugs }) {
                   <p className="font-mono font-bold text-base">{p.invInfo?.presentation || "—"}</p>
                 </div>
               </div>
-
-              <DrugLotInfo lote={p.lote} />
 
               {/* Preparation steps */}
               {hasFullCalc ? (

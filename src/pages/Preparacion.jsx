@@ -58,6 +58,10 @@ export default function Preparacion() {
         .grid3 .label { font-size: 10px; color: #777; }
         .grid3 .val { font-weight: bold; color: #0369a1; font-size: 16px; }
         .grid3 .sub { font-size: 10px; color: #888; }
+        .lot-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+        .lot-table th, .lot-table td { border: 1px solid #ccc; padding: 5px 6px; font-size: 11px; text-align: left; }
+        .lot-table th { background: #f4f4f4; text-transform: uppercase; font-size: 10px; }
+        .lot-table td:last-child, .lot-table th:last-child { text-align: center; }
 
         @media print { body { margin: 10px; } }
       </style></head><body>
@@ -135,7 +139,7 @@ export default function Preparacion() {
               </div>
               {selected === rx.id && (
                 <div className="p-4" id={`prep-${rx.id}`}>
-                  <PreparationSheet drugs={rx.drugs} />
+                  <PreparationSheet drugs={rx.drugs} prescription={rx} />
                 </div>
               )}
             </div>

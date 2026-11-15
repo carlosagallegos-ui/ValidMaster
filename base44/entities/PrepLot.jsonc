@@ -1,0 +1,54 @@
+{
+  "name": "PrepLot",
+  "type": "object",
+  "properties": {
+    "prescription_id": {
+      "type": "string",
+      "description": "ID de la prescripci\u00f3n a la que pertenece el lote"
+    },
+    "patient_name": {
+      "type": "string",
+      "description": "Nombre del paciente"
+    },
+    "drug_name": {
+      "type": "string",
+      "description": "Nombre del medicamento"
+    },
+    "presentation": {
+      "type": "string",
+      "description": "Presentaci\u00f3n del medicamento"
+    },
+    "lot_number": {
+      "type": "string",
+      "description": "N\u00famero de lote"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Lote verificado en el \u00e1rea de preparaci\u00f3n"
+    },
+    "verified_by": {
+      "type": "string",
+      "description": "Qui\u00e9n verific\u00f3 el lote"
+    },
+    "verified_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de verificaci\u00f3n"
+    }
+  },
+  "required": [
+    "prescription_id",
+    "drug_name"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
