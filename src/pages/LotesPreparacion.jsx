@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import PrepLotTable from "@/components/PrepLotTable";
+import ShiftLotSheet from "@/components/ShiftLotSheet";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Search, ClipboardCheck, User, Beaker } from "lucide-react";
 import { formatDate } from "@/lib/dateUtils";
 
@@ -10,6 +12,7 @@ export default function LotesPreparacion() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [view, setView] = useState("turno");
 
   useEffect(() => {
     base44.entities.Prescription.list("-created_date", 300).then(rxs => {
@@ -36,7 +39,16 @@ export default function LotesPreparacion() {
         </p>
       </div>
 
-      {loading ? (
+      <div className="flex flex-wrap gap-2">
+        <Button variant={view === "turno" ? "default" : "outline"} size="sm" className="gap-1" onClick={() => setView("turno")}>
+          <ClipboardCheck className="h-4 w-4" /> Hoja del Turno
+        </Button>
+        <Button variant={view === "mezcla" ? "default" : "outline"} size="sm" className="gap-1" onClick={() => setView("mezcla")}>
+          <Beaker className="h-4 w-4" /> Por Mezcla
+        </Button>
+      </div>
+
+      {view === "turno" ? <ShiftLotSheet /> : loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
         </div>
