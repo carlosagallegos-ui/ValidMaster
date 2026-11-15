@@ -4,13 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Printer, Package, FlaskConical, AlertTriangle } from "lucide-react";
 import moment from "moment";
-
-const SIN_AREA = "SIN ÁREA ASIGNADA";
-
-const getArea = (med) =>
-  (med.area && med.area.trim()) ||
-  (med.storage_conditions && med.storage_conditions.trim()) ||
-  SIN_AREA;
+import { AREAS_CENTRO, areaLabel, clasificarArea } from "@/lib/areasCentro";
 
 function printHoja(areaName, list) {
   const rows = list.map(m => {
@@ -40,6 +34,7 @@ function printHoja(areaName, list) {
     th,td{border:1px solid #bbb;padding:4px 5px;text-align:left;vertical-align:top}
     th{background:#eef4f8;font-size:10px;text-transform:uppercase;letter-spacing:.3px}
     .mono{font-family:"Courier New",monospace}
+    .empty{padding:10px;border:1px dashed #bbb;color:#666;font-size:10px}
     .sign{display:flex;gap:40px;margin-top:40px}
     .sign div{flex:1;border-top:1px solid #333;padding-top:4px;font-size:10px;text-align:center}
     @page{size:letter;margin:12mm}
@@ -52,13 +47,15 @@ function printHoja(areaName, list) {
       <span><strong>Lotes:</strong> ${list.length}</span>
       <span><strong>Frascos disponibles:</strong> ${list.reduce((s, m) => s + (m.quantity_available ?? m.quantity_received ?? 0), 0)}</span>
     </div>
-    <table>
-      <thead><tr>
-        <th>Medicamento</th><th>Concentración</th><th>Presentación</th><th>Lote</th>
-        <th>Caducidad</th><th>Recibidos</th><th>Disponibles</th><th>Proveedor</th><th>Estado</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
+    ${list.length === 0
+      ? `<div class="empty">Sin lotes registrados en esta área.</div>`
+      : `<table>
+        <thead><tr>
+          <th>Medicamento</th><th>Concentración</th><th>Presentación</th><th>Lote</th>
+          <th>Caducidad</th><th>Recibidos</th><th>Disponibles</th><th>Proveedor</th><th>Estado</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`}
     <div class="sign">
       <div>Elaboró</div><div>Revisó</div><div>Vo. Bo.</div>
     </div>
@@ -91,30 +88,18 @@ export default function HojasLotes() {
     m.lot_number?.toLowerCase().includes(search.toLowerCase()) ||
     m.supplier?.toLowerCase().includes(search.toLowerCase());
 
-  const areas = [...new Set(medications.map(getArea))].sort((a, b) => {
-    if (a === SIN_AREA) return 1;
-    if (b === SIN_AREA) return -1;
-    return a.localeCompare(b);
-  });
-
-  const visible = medications.filter(m =>
-    matchesSearch(m) && (activeArea === "TODAS" || getArea(m) === activeArea)
-  );
-
-  const grouped = visible.reduce((acc, m) => {
-    const area = getArea(m);
-    acc[area] = acc[area] || [];
-    acc[area].push(m);
+  const porArea = AREAS_CENTRO.reduce((acc, a) => {
+    acc[a.value] = medications.filter(m => clasificarArea(m) === a.value && matchesSearch(m));
     return acc;
   }, {});
 
-  const areaNames = Object.keys(grouped).sort((a, b) => {
-    if (a === SIN_AREA) return 1;
-    if (b === SIN_AREA) return -1;
-    return a.localeCompare(b);
-  });
+  const areasVisibles = activeArea === "TODAS" ? AREAS_CENTRO : AREAS_CENTRO.filter(a => a.value === activeArea);
+  const visible = activeArea === "TODAS"
+    ? medications.filter(matchesSearch)
+    : porArea[activeArea];
 
   const totalFrascos = visible.reduce((s, m) => s + (m.quantity_available ?? m.quantity_received ?? 0), 0);
+  const areasConLotes = AREAS_CENTRO.filter(a => porArea[a.value].length > 0).length;
 
   if (loading) {
     return (
@@ -129,9 +114,11 @@ export default function HojasLotes() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Hoja de Lotes por Área</h1>
-          <p className="text-sm text-muted-foreground mt-1">Lotes de medicamentos resguardados en cada área del centro</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Lotes resguardados en cada área del centro · clasificación por estado y condiciones de almacenamiento
+          </p>
         </div>
-        <Button className="gap-2" onClick={() => printHoja(activeArea === "TODAS" ? "Todas las áreas" : activeArea, visible)} disabled={visible.length === 0}>
+        <Button className="gap-2" onClick={() => printHoja(activeArea === "TODAS" ? "Todas las áreas" : areaLabel(activeArea), visible)}>
           <Printer className="h-4 w-4" /> Imprimir hoja
         </Button>
       </div>
@@ -155,7 +142,7 @@ export default function HojasLotes() {
           <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center mb-2">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
           </div>
-          <p className="text-2xl font-bold tracking-tight">{areaNames.filter(a => a !== SIN_AREA).length}</p>
+          <p className="text-2xl font-bold tracking-tight">{areasConLotes}/{AREAS_CENTRO.length}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Áreas con lotes</p>
         </div>
       </div>
@@ -171,44 +158,51 @@ export default function HojasLotes() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {["TODAS", ...areas].map(area => (
+        <button
+          onClick={() => setActiveArea("TODAS")}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            activeArea === "TODAS"
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-card text-muted-foreground border-border hover:bg-muted"
+          }`}
+        >
+          Todas las áreas
+        </button>
+        {AREAS_CENTRO.map(a => (
           <button
-            key={area}
-            onClick={() => setActiveArea(area)}
+            key={a.value}
+            onClick={() => setActiveArea(a.value)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              activeArea === area
+              activeArea === a.value
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-card text-muted-foreground border-border hover:bg-muted"
             }`}
           >
-            {area === "TODAS" ? "Todas las áreas" : area}
+            {a.label} · {porArea[a.value].length}
           </button>
         ))}
       </div>
 
-      {areaNames.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border p-12 text-center">
-          <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-          <p className="text-muted-foreground">No hay lotes que coincidan</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {areaNames.map(area => {
-            const list = grouped[area];
-            const frascos = list.reduce((s, m) => s + (m.quantity_available ?? m.quantity_received ?? 0), 0);
-            return (
-              <div key={area} className="bg-card rounded-xl border border-border overflow-hidden">
-                <div className="px-5 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <h2 className="font-semibold text-sm">{area}</h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {list.length} lote(s) · {frascos} frasco(s) disponible(s)
-                    </p>
-                  </div>
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => printHoja(area, list)}>
-                    <Printer className="h-3.5 w-3.5" /> Imprimir área
-                  </Button>
+      <div className="space-y-6">
+        {areasVisibles.map(area => {
+          const list = porArea[area.value];
+          const frascos = list.reduce((s, m) => s + (m.quantity_available ?? m.quantity_received ?? 0), 0);
+          return (
+            <div key={area.value} className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="px-5 py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h2 className="font-semibold text-sm">{area.label}</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {area.hint} · {list.length} lote(s) · {frascos} frasco(s) disponible(s)
+                  </p>
                 </div>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => printHoja(area.label, list)}>
+                  <Printer className="h-3.5 w-3.5" /> Imprimir área
+                </Button>
+              </div>
+              {list.length === 0 ? (
+                <p className="px-5 py-8 text-center text-sm text-muted-foreground">Sin lotes en esta área</p>
+              ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -255,11 +249,11 @@ export default function HojasLotes() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Search, Plus, FlaskConical, AlertTriangle, Package, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
 import moment from "moment";
+import { AREAS_CENTRO } from "@/lib/areasCentro";
 
 // Extraer lista única de medicamentos de los protocolos (normalizar bolo/infusión)
 const PROTOCOL_DRUGS = [...new Set(
@@ -337,7 +338,15 @@ export default function Medications() {
             </div>
             <div className="col-span-2">
               <Label>Área de resguardo del lote</Label>
-              <Input value={form.area || ""} onChange={e => set("area", e.target.value.toUpperCase())} placeholder="Ej. REFRIGERACIÓN, ALMACÉN GENERAL..." />
+              <Select value={form.area || "AUTOMÁTICA"} onValueChange={v => set("area", v === "AUTOMÁTICA" ? "" : v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AUTOMÁTICA">Automática (según estado y condiciones)</SelectItem>
+                  {AREAS_CENTRO.map(a => (
+                    <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="col-span-2">
               <Label>Condiciones de almacenamiento</Label>
