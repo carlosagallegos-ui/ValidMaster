@@ -44,6 +44,20 @@
       "type": "string",
       "format": "date"
     },
+    "scheduled_date": {
+      "type": "string",
+      "format": "date",
+      "description": "D\u00eda programado para la preparaci\u00f3n de la mezcla"
+    },
+    "scheduled_shift": {
+      "type": "string",
+      "enum": [
+        "Matutino",
+        "Vespertino",
+        "Nocturno"
+      ],
+      "description": "Turno programado para la preparaci\u00f3n"
+    },
     "drugs": {
       "type": "array",
       "items": {
