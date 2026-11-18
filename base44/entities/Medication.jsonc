@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Nombre del medicamento"
     },
+    "barcode": {
+      "type": "string",
+      "description": "C\u00f3digo de barras del lote (lector USB o c\u00e1mara)"
+    },
     "area": {
       "type": "string",
       "description": "\u00c1rea f\u00edsica donde se resguarda el lote (almac\u00e9n, refrigeraci\u00f3n, preparaci\u00f3n, cuarentena, etc.)"

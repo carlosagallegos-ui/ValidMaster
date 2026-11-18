@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Plus, FlaskConical, AlertTriangle, Package, CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
+import { Search, Plus, FlaskConical, AlertTriangle, Package, CheckCircle, XCircle, Clock, Trash2, ScanLine } from "lucide-react";
 import moment from "moment";
 import { AREAS_CENTRO } from "@/lib/areasCentro";
+import ScanDialog from "@/components/inventory/ScanDialog";
 
 // Extraer lista única de medicamentos de los protocolos (normalizar bolo/infusión)
 const PROTOCOL_DRUGS = [...new Set(
@@ -69,7 +70,7 @@ const STATUS_COLORS = {
 };
 
 const EMPTY = {
-  drug_name: "", concentration: "", concentration_unit: "mg",
+  drug_name: "", barcode: "", concentration: "", concentration_unit: "mg",
   vial_volume_ml: "", presentation: "Frasco ampolleta",
   lot_number: "", expiration_date: "", quantity_received: "",
   quantity_available: "", supplier: "",
@@ -86,6 +87,7 @@ export default function Medications() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [scanOpen, setScanOpen] = useState(false);
 
   useEffect(() => {
     base44.entities.Medication.list("-received_date", 300).then(data => {
@@ -98,8 +100,38 @@ export default function Medications() {
     !search ||
     m.drug_name?.toLowerCase().includes(search.toLowerCase()) ||
     m.lot_number?.toLowerCase().includes(search.toLowerCase()) ||
+    m.barcode?.toLowerCase().includes(search.toLowerCase()) ||
     m.supplier?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const lookupCode = async (raw) => {
+    const code = raw.trim();
+    const upper = code.toUpperCase();
+    const local = medications.find(m => m.barcode === upper || m.barcode === code || m.lot_number === upper);
+    if (local) return local;
+    const byBarcode = await base44.entities.Medication.filter({ barcode: upper }, { limit: 1 });
+    if (byBarcode.items?.length) return byBarcode.items[0];
+    const byLot = await base44.entities.Medication.filter({ lot_number: upper }, { limit: 1 });
+    return byLot.items?.[0] || null;
+  };
+
+  // Alta de un lote nuevo a partir de un código escaneado
+  const registerFromScan = (source) => {
+    setForm({
+      ...EMPTY,
+      barcode: (source.barcode || "").toUpperCase(),
+      drug_name: source.drug_name || "",
+      concentration: source.concentration ?? "",
+      concentration_unit: source.concentration_unit || "mg",
+      vial_volume_ml: source.vial_volume_ml ?? "",
+      presentation: source.presentation || "Frasco ampolleta",
+      area: source.area || "",
+      storage_conditions: source.storage_conditions || "",
+      supplier: source.supplier || "",
+    });
+    setEditing(null);
+    setShowForm(true);
+  };
 
   const openNew = () => { setForm(EMPTY); setEditing(null); setShowForm(true); };
   const openEdit = (med) => { setForm({ ...med }); setEditing(med.id); setShowForm(true); };
@@ -152,9 +184,14 @@ export default function Medications() {
           <h1 className="text-2xl font-bold tracking-tight">Inventario de Medicamentos</h1>
           <p className="text-sm text-muted-foreground mt-1">Alta y control de medicamentos entrantes</p>
         </div>
-        <Button className="gap-2" onClick={openNew}>
-          <Plus className="h-4 w-4" /> Dar de alta
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => setScanOpen(true)}>
+            <ScanLine className="h-4 w-4" /> Escanear código
+          </Button>
+          <Button className="gap-2" onClick={openNew}>
+            <Plus className="h-4 w-4" /> Dar de alta
+          </Button>
+        </div>
       </div>
 
       {/* Inventory Summary */}
@@ -211,6 +248,7 @@ export default function Medications() {
                           <FlaskConical className="h-3.5 w-3.5 text-primary/60 shrink-0" />
                           <span className="text-sm font-medium">{med.drug_name}</span>
                         </div>
+                        {med.barcode && <p className="text-[10px] text-muted-foreground font-mono mt-0.5 pl-5">{med.barcode}</p>}
                       </td>
                       <td className="px-4 py-3 text-sm font-mono">{med.concentration} {med.concentration_unit}{med.vial_volume_ml ? ` / ${med.vial_volume_ml} mL` : ""}</td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">{med.presentation}</td>
@@ -266,6 +304,14 @@ export default function Medications() {
         </div>
       )}
 
+      <ScanDialog
+        open={scanOpen}
+        onOpenChange={setScanOpen}
+        onLookup={lookupCode}
+        onRegisterLot={registerFromScan}
+        onEdit={openEdit}
+      />
+
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
           <DialogHeader>
@@ -275,6 +321,15 @@ export default function Medications() {
             <div className="col-span-2">
               <Label>Nombre del medicamento *</Label>
               <DrugNameInput value={form.drug_name} onChange={v => set("drug_name", v)} />
+            </div>
+            <div className="col-span-2">
+              <Label>Código de barras del lote</Label>
+              <Input
+                value={form.barcode}
+                onChange={e => set("barcode", e.target.value.toUpperCase())}
+                placeholder="Escanea con lector USB o escribe el código"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">Se usa para identificar este lote al pasarlo por el escáner.</p>
             </div>
             <div>
               <Label>Concentración *</Label>
