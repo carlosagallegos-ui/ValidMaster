@@ -16,6 +16,7 @@ import { calculateDose, validateDose, generateAlerts } from "@/lib/chemoProtocol
 import DrugInteractionAlert from "@/components/DrugInteractionAlert";
 import { detectInteractions } from "@/lib/drugInteractions";
 import DoseAdjustmentPanel from "@/components/DoseAdjustmentPanel";
+import CumulativeDoseCard from "@/components/CumulativeDoseCard";
 import { calculateNPT, validateNPT } from "@/lib/nptCalculations";
 
 const PRESCRIPTION_TYPES = [
@@ -587,6 +588,11 @@ export default function NewPrescription() {
               </div>
               {alerts.map((a, i) => <p key={i} className="text-sm text-amber-700">{a}</p>)}
             </div>
+          )}
+
+          {/* Dosis acumulada de por vida */}
+          {prescriptionType === "Oncologico" && patient && drugDoses.length > 0 && (
+            <CumulativeDoseCard patientId={patient.id} bsa={patient.bsa} previewDrugs={drugDoses} />
           )}
 
           {/* Resumen del paciente */}

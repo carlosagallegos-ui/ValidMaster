@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Plus } from "lucide-react";
 import { formatDate } from "@/lib/dateUtils";
 import ShiftColumn from "@/components/programacion/ShiftColumn";
 import UnscheduledList from "@/components/programacion/UnscheduledList";
+import TreatmentPlan from "@/components/programacion/TreatmentPlan";
+import TreatmentScheduler from "@/components/programacion/TreatmentScheduler";
 
 const SHIFTS = [
   { id: "Matutino", label: "Matutino", range: "07:00 – 14:00" },
@@ -32,6 +34,8 @@ export default function Programacion() {
   const [dayMixes, setDayMixes] = useState([]);
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [schedulerOpen, setSchedulerOpen] = useState(false);
+  const [planKey, setPlanKey] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -91,6 +95,9 @@ export default function Programacion() {
           <Button variant="secondary" size="sm" className="h-9" onClick={() => setDate(localDateKey())}>
             Hoy
           </Button>
+          <Button size="sm" className="h-9 gap-1" onClick={() => setSchedulerOpen(true)}>
+            <Plus className="h-4 w-4" /> Programar tratamiento
+          </Button>
         </div>
       </div>
 
@@ -134,6 +141,14 @@ export default function Programacion() {
       )}
 
       <UnscheduledList mixes={pending} onSchedule={schedule} />
+
+      <TreatmentPlan refreshKey={planKey} />
+
+      <TreatmentScheduler
+        open={schedulerOpen}
+        onOpenChange={setSchedulerOpen}
+        onScheduled={() => { load(); setPlanKey(k => k + 1); }}
+      />
     </div>
   );
 }

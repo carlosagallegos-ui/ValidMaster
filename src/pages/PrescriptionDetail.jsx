@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle, XCircle, Printer, AlertTriangle } from "lucide-
 import StatusBadge from "@/components/StatusBadge";
 import PreparationSheet from "@/components/PreparationSheet";
 import DoseValidationRow from "@/components/DoseValidationRow";
+import CumulativeDoseCard from "@/components/CumulativeDoseCard";
 import moment from "moment";
 import { formatDate, formatDateTime } from "@/lib/dateUtils";
 
@@ -110,6 +111,11 @@ export default function PrescriptionDetail() {
           </div>
           {rx.alerts.map((a, i) => <p key={i} className="text-sm text-amber-700">{a}</p>)}
         </div>
+      )}
+
+      {/* Dosis acumulada */}
+      {rx.prescription_type === "Oncologico" && rx.patient_id && (
+        <CumulativeDoseCard patientId={rx.patient_id} bsa={rx.patient_bsa} />
       )}
 
       {/* Tabs */}
