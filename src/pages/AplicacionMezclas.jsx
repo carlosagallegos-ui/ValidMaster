@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, CheckCircle, AlertTriangle, Zap, ShieldAlert } from "lucide-react";
 import { formatDate } from "@/lib/dateUtils";
 import AdverseEventForm from "@/components/AdverseEventForm";
+import { logAudit } from "@/lib/auditLog";
 
 export default function AplicacionMezclas() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -76,6 +77,15 @@ export default function AplicacionMezclas() {
     }
 
     await base44.entities.Prescription.update(selectedRx.id, updateData);
+
+    await logAudit({
+      action: "Aplicación",
+      description: `Resultado de aplicación: ${result}${notes ? ` · ${notes}` : ""}`,
+      patient_name: selectedRx.patient_name,
+      prescription_id: selectedRx.id,
+      drug_name: selectedRx.drugs?.[0]?.drug_name,
+      user,
+    });
 
     // Si hay reacción adversa, mostrar el formulario detallado
     if (result === "Reacción adversa") {

@@ -10,6 +10,7 @@ import { Search, Plus, FlaskConical, AlertTriangle, Package, CheckCircle, XCircl
 import moment from "moment";
 import { AREAS_CENTRO } from "@/lib/areasCentro";
 import ScanDialog from "@/components/inventory/ScanDialog";
+import { logAudit } from "@/lib/auditLog";
 
 // Extraer lista única de medicamentos de los protocolos (normalizar bolo/infusión)
 const PROTOCOL_DRUGS = [...new Set(
@@ -151,6 +152,13 @@ export default function Medications() {
     } else {
       const created = await base44.entities.Medication.create(data);
       setMedications(prev => [created, ...prev]);
+      await logAudit({
+        action: "Inventario",
+        description: `Alta de lote: ${data.drug_name} · ${data.quantity_received} frasco(s)${data.lot_number ? ` · lote ${data.lot_number}` : ""}`,
+        drug_name: data.drug_name,
+        entity_id: created.id,
+        details: data.expiration_date ? `Caducidad: ${data.expiration_date}` : undefined,
+      });
     }
     setSaving(false);
     setShowForm(false);
@@ -159,9 +167,16 @@ export default function Medications() {
   const set = (field, value) => setForm(p => ({ ...p, [field]: value }));
 
   const handleDelete = async (id) => {
+    const med = medications.find(m => m.id === id);
     await base44.entities.Medication.delete(id);
     setMedications(prev => prev.filter(m => m.id !== id));
     setConfirmDelete(null);
+    await logAudit({
+      action: "Inventario",
+      description: `Baja de lote: ${med?.drug_name || "medicamento"}${med?.lot_number ? ` · lote ${med.lot_number}` : ""}`,
+      drug_name: med?.drug_name,
+      entity_id: id,
+    });
   };
 
   const stats = {

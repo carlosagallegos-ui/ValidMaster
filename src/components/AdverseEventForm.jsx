@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertTriangle, Zap, Clock, ShieldAlert } from "lucide-react";
+import { logAudit } from "@/lib/auditLog";
 
 const EVENT_TYPES = [
   "Hipersensibilidad / Anafilaxia",
@@ -98,6 +99,14 @@ export default function AdverseEventForm({ rx, drugName, onSaved, onCancel }) {
       event_date: new Date().toISOString()
     });
     setSaving(false);
+    await logAudit({
+      action: "Evento adverso",
+      description: `${form.event_type === "Otro" ? form.event_type_other : form.event_type} · ${form.severity} (CTCAE ${form.ctcae_grade})`,
+      patient_name: rx.patient_name,
+      drug_name: form.drug_name,
+      prescription_id: rx.id,
+      user,
+    });
     onSaved?.();
   };
 

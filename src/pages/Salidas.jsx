@@ -6,6 +6,7 @@ import { Search, CheckCircle2, Truck, Clock, FlaskConical } from "lucide-react";
 import { formatDate, formatDateTime } from "@/lib/dateUtils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { logAudit } from "@/lib/auditLog";
 
 const STEP_CONFIG = {
   pending:    { label: "Pendiente",    bg: "bg-amber-50",   text: "text-amber-700",  border: "border-amber-200" },
@@ -59,6 +60,15 @@ export default function Salidas() {
     }
     const updated = await base44.entities.Prescription.update(dialog.rx.id, data);
     setPrescriptions(prev => prev.map(p => p.id === dialog.rx.id ? { ...p, ...updated } : p));
+    await logAudit({
+      action: dialog.action === "inspect" ? "Inspección" : "Entrega",
+      description: dialog.action === "inspect"
+        ? `Mezcla inspeccionada (${dialog.rx.drugs?.length || 0} medicamento(s))`
+        : `Mezcla entregada a ${form.delivered_to || "—"}`,
+      patient_name: dialog.rx.patient_name,
+      prescription_id: dialog.rx.id,
+      user,
+    });
     setSaving(false);
     setDialog(null);
   };

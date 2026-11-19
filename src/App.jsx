@@ -26,6 +26,7 @@ import AplicacionMezclas from './pages/AplicacionMezclas';
 import EventosAdversos from './pages/EventosAdversos';
 import LotesPreparacion from './pages/LotesPreparacion';
 import Programacion from './pages/Programacion';
+import Bitacora from './pages/Bitacora';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
         <Route path="/preparacion" element={<Preparacion />} />
         <Route path="/lotes-preparacion" element={<LotesPreparacion />} />
         <Route path="/programacion" element={<Programacion />} />
+        <Route path="/bitacora" element={<Bitacora />} />
         <Route path="/salidas" element={<Salidas />} />
         <Route path="/mis-prescripciones" element={<MisPrescripciones />} />
         <Route path="/protocolos" element={<Protocols />} />

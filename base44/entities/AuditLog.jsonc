@@ -1,0 +1,91 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Momento del evento"
+    },
+    "action": {
+      "type": "string",
+      "description": "Tipo de evento registrado",
+      "enum": [
+        "Prescripci\u00f3n",
+        "Validaci\u00f3n",
+        "Inspecci\u00f3n",
+        "Entrega",
+        "Aplicaci\u00f3n",
+        "Evento adverso",
+        "Inventario",
+        "Lote",
+        "Otro"
+      ],
+      "enumColors": [
+        "blue",
+        "green",
+        "purple",
+        "purple",
+        "blue",
+        "red",
+        "yellow",
+        "gray",
+        "gray"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Detalle legible del evento"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Usuario que ejecut\u00f3 la acci\u00f3n"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Correo del usuario"
+    },
+    "user_role": {
+      "type": "string",
+      "description": "Rol del usuario al momento del evento"
+    },
+    "patient_name": {
+      "type": "string",
+      "description": "Paciente relacionado"
+    },
+    "drug_name": {
+      "type": "string",
+      "description": "Medicamento relacionado"
+    },
+    "prescription_id": {
+      "type": "string",
+      "description": "ID de la prescripci\u00f3n relacionada"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Registro afectado"
+    },
+    "details": {
+      "type": "string",
+      "description": "Informaci\u00f3n adicional (lotes, cantidades, valores previos)"
+    }
+  },
+  "required": [
+    "action",
+    "description"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

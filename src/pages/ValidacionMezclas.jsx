@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, CheckCircle, XCircle } from "lucide-react";
 import ClinicalFeedback from "@/components/ClinicalFeedback";
 import StateTimeline from "@/components/StateTimeline";
+import { vialsForDrug } from "@/lib/vialCalc";
+import { deductVialsForDrug } from "@/lib/inventory";
+import { logAudit } from "@/lib/auditLog";
 
 export default function ValidacionMezclas() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -23,6 +26,7 @@ export default function ValidacionMezclas() {
   const [filterStatus, setFilterStatus] = useState("todos");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
+  const [deduction, setDeduction] = useState(null);
 
   useEffect(() => {
     loadPrescriptions();
@@ -73,6 +77,7 @@ export default function ValidacionMezclas() {
   });
 
   const handleSelectMix = (mix) => {
+    setDeduction(null);
     setSelectedMix(mix);
     setMixIndex(mix.mixIndex);
     const ds = mix.drug.validation_status;
@@ -86,11 +91,27 @@ export default function ValidacionMezclas() {
   const handleValidate = async () => {
     if (!selectedMix) return;
     setUpdating(true);
+    setDeduction(null);
 
     const user = await base44.auth.me();
     const rx = prescriptions.find(p => p.id === selectedMix.rxId);
-    
+
     if (rx) {
+      const prevDrug = rx.drugs[mixIndex] || {};
+      let deductionResult = null;
+      let inventoryDeducted = prevDrug.inventory_deducted || false;
+
+      // Descuento automático de frascos la primera vez que la mezcla se valida
+      if (status === "Validada" && !prevDrug.inventory_deducted) {
+        const meds = (await base44.entities.Medication.filter({ status: "Disponible" }, { limit: 300 })).items;
+        const vials = vialsForDrug(prevDrug, meds);
+        if (vials && vials.frascos > 0) {
+          deductionResult = await deductVialsForDrug(prevDrug.drug_name, vials.frascos, meds);
+          inventoryDeducted = true;
+          setDeduction({ ...deductionResult, drug_name: prevDrug.drug_name });
+        }
+      }
+
       const updatedDrugs = rx.drugs.map((d, i) => {
         if (i === mixIndex) {
           return {
@@ -100,6 +121,8 @@ export default function ValidacionMezclas() {
             validation_status: status,
             validated_by: user.full_name || user.email,
             validation_date: new Date().toISOString(),
+            inventory_deducted: inventoryDeducted,
+            deducted_vials: (d.deducted_vials || 0) + (deductionResult?.deducted || 0),
           };
         }
         return d;
@@ -151,6 +174,27 @@ export default function ValidacionMezclas() {
         validation_date: new Date().toISOString(),
         state_history: stateHistory
       });
+
+      await logAudit({
+        action: "Validación",
+        description: `Mezcla ${mixIndex + 1} (${selectedMix.drug.drug_name}): ${status}${recommendation ? ` · ${recommendation}` : ""}`,
+        patient_name: rx.patient_name,
+        drug_name: selectedMix.drug.drug_name,
+        prescription_id: rx.id,
+        user,
+      });
+
+      if (deductionResult && deductionResult.deducted > 0) {
+        await logAudit({
+          action: "Inventario",
+          description: `Descuento automático al validar: ${deductionResult.deducted} frasco(s) de ${prevDrug.drug_name}`,
+          details: `${deductionResult.lots.map(l => `lote ${l.lot}: -${l.taken}`).join(" · ")}${deductionResult.shortage > 0 ? ` · faltante ${deductionResult.shortage} frasco(s)` : ""}`,
+          patient_name: rx.patient_name,
+          drug_name: prevDrug.drug_name,
+          prescription_id: rx.id,
+          user,
+        });
+      }
 
       setRecommendation("");
     }
@@ -399,6 +443,28 @@ export default function ValidacionMezclas() {
                       Cancelar
                     </Button>
                   </div>
+
+                  {deduction && (
+                    <div className={`rounded-lg border px-3 py-2 text-xs ${
+                      deduction.shortage > 0
+                        ? "border-amber-300 bg-amber-50 text-amber-800"
+                        : "border-emerald-300 bg-emerald-50 text-emerald-800"
+                    }`}>
+                      <p className="font-semibold">
+                        Inventario: {deduction.deducted} frasco(s) de {deduction.drug_name} descontados
+                      </p>
+                      {deduction.lots?.length > 0 && (
+                        <p className="mt-0.5">
+                          {deduction.lots.map(l => `Lote ${l.lot}: -${l.taken}`).join(" · ")}
+                        </p>
+                      )}
+                      {deduction.shortage > 0 && (
+                        <p className="mt-0.5 font-medium">
+                          Faltan {deduction.shortage} frasco(s) sin existencias en inventario
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

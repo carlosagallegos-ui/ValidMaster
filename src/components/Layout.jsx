@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck, CalendarDays } from "lucide-react";
+import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck, CalendarDays, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect } from "react";
 import RoadmapTracker from "@/components/roadmap/RoadmapTracker";
@@ -33,6 +33,7 @@ const ALL_NAV_ITEMS = [
 
   // Informes
   { path: "/informes", label: "Informes", icon: BarChart3, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "encargado_calidad"] },
+  { path: "/bitacora", label: "Bitácora de Auditoría", icon: History, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "encargado_calidad"] },
 
   // Compartidos
   { path: "/pacientes", label: "Pacientes", icon: Users, roles: ["admin", "jefe_centro", "validador", "medico", "coordinador", "encargado_preparacion", "encargado_calidad"] },
