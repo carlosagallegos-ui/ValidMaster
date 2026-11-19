@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Printer, Tag, Thermometer, Clock } from "lucide-react";
-import { formatDate, folioPrefix } from "@/lib/dateUtils";
+import { Search, Printer } from "lucide-react";
+import { formatDate, formatDateTime, folioPrefix } from "@/lib/dateUtils";
 import { getDrugStability } from "@/lib/drugStability";
+import { computeBud } from "@/lib/bud";
 
 function buildFolios(prescriptions) {
   const byDay = {};
@@ -71,7 +72,8 @@ export default function Etiquetas() {
       const stability = getDrugStability(drug.drug_name);
       const medInfo = getMedInfo(drug.drug_name);
       const nss = getPatientNSS(rx);
-      allLabels.push({ rx, drug, folio: folioMap[key] || "—", stability, medInfo, nss });
+      const bud = computeBud(drug.drug_name, drug.validation_date || rx.validation_date || rx.created_date);
+      allLabels.push({ rx, drug, folio: folioMap[key] || "—", stability, medInfo, nss, bud });
     });
   });
 
@@ -93,73 +95,79 @@ export default function Etiquetas() {
         .label {
           width: 10cm; height: 5cm;
           border: 1.5px solid #333; border-radius: 6px;
-          padding: 8px 10px;
+          padding: 5px 8px 6px;
           page-break-inside: avoid;
-          display: flex; flex-direction: row; gap: 0;
+          display: flex; flex-direction: column;
           overflow: hidden;
         }
-        .folio { font-size: 9px; color: #555; font-family: monospace; }
-        .drug { font-size: 13px; font-weight: bold; color: #000; margin: 2px 0 1px; }
+        .label-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+        .logo-box {
+          width: 1.5cm; height: 1.05cm;
+          border: 1px dashed #c4c4c4; border-radius: 3px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 6px; color: #c4c4c4; letter-spacing: .12em;
+        }
+        .folio { font-size: 9px; color: #555; font-family: monospace; text-align: right; }
+        .label-body { flex: 1; display: flex; min-height: 0; padding-top: 2px; }
+        .drug { font-size: 13px; font-weight: bold; color: #000; margin: 0 0 1px; line-height: 1.15; }
         .dose { font-size: 12px; font-weight: bold; color: #0369a1; }
-        .row { font-size: 10px; color: #333; margin-top: 1px; }
+        .row { font-size: 9px; color: #333; margin-top: 1px; }
         .row b { font-weight: bold; }
-        .vdivider { border: none; border-left: 1px solid #ddd; margin: 0 8px; }
+        .vdivider { border: none; border-left: 1px solid #ddd; margin: 0 7px; }
         .patient { font-size: 11px; font-weight: bold; }
-        .sub { font-size: 9px; color: #555; margin-top: 1px; }
-        .col-left { flex: 1.1; display: flex; flex-direction: column; justify-content: space-between; }
-        .col-right { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .stability-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 3px; padding: 3px 5px; margin-top: 3px; }
-        .stability-box .s-title { font-size: 8px; font-weight: bold; color: #166534; text-transform: uppercase; }
-        .stability-box .s-val { font-size: 9px; color: #15803d; }
-        .storage-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 3px; padding: 3px 5px; margin-top: 3px; }
-        .storage-box .s-title { font-size: 8px; font-weight: bold; color: #1e40af; text-transform: uppercase; }
-        .storage-box .s-val { font-size: 9px; color: #1d4ed8; }
+        .sub { font-size: 8.5px; color: #555; margin-top: 1px; }
+        .col-left { flex: 1.1; display: flex; flex-direction: column; }
+        .col-right { flex: 1; display: flex; flex-direction: column; }
+        .label-foot { display: flex; gap: 5px; margin-top: 3px; }
+        .bud-box { flex: 1.2; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 3px; padding: 2px 5px; }
+        .bud-box.exp { background: #fef2f2; border-color: #fca5a5; }
+        .bud-title { font-size: 7px; font-weight: bold; color: #b45309; text-transform: uppercase; letter-spacing: .04em; }
+        .bud-box.exp .bud-title { color: #b91c1c; }
+        .bud-val { font-size: 12px; font-weight: bold; color: #92400e; font-family: monospace; }
+        .bud-box.exp .bud-val { color: #b91c1c; }
+        .bud-sub { font-size: 6.5px; color: #a16207; }
+        .bud-box.exp .bud-sub { color: #b91c1c; }
+        .storage-box { flex: 1; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 3px; padding: 2px 5px; }
+        .storage-box .s-title { font-size: 7px; font-weight: bold; color: #1e40af; text-transform: uppercase; }
+        .storage-box .s-val { font-size: 8px; color: #1d4ed8; }
         @media print { body { margin: 0; } }
       </style></head><body>
       <div class="page">
-        ${labels.map(({ rx, drug, folio, stability, medInfo, nss }) => `
+        ${labels.map(({ rx, drug, folio, stability, medInfo, nss, bud }) => `
           <div class="label">
-            <div class="col-left">
-              <div>
-                <div class="folio">Folio: ${folio}</div>
+            <div class="label-head">
+              <div class="logo-box">LOGO</div>
+              <div class="folio">Folio: ${folio}</div>
+            </div>
+            <div class="label-body">
+              <div class="col-left">
                 <div class="drug">${drug.drug_name}</div>
                 <div class="dose">${drug.prescribed_dose ?? drug.calculated_dose ?? "—"} ${drug.dose_unit || "mg"}</div>
-                <div class="row">Vía: <b>${drug.route || "—"}</b></div>
-                <div class="row">Inf: <b>${drug.infusion_time || "—"}</b></div>
+                <div class="row">Vía: <b>${drug.route || "—"}</b> · Inf: <b>${drug.infusion_time || "—"}</b></div>
                 ${drug.frequency ? `<div class="row">Frec: <b>${drug.frequency}</b>${drug.duration_days ? ` · <b>${drug.duration_days} días</b>` : ""}</div>` : ""}
                 <div class="row">Solución: <b>${drug.solution_type || drug.diluent || "—"}</b>${(drug.prescribed_volume || drug.volume_ml) ? ` <b>${drug.prescribed_volume || drug.volume_ml} mL</b>` : ""}</div>
                 <div class="row">Recipiente: <b>${drug.container_material || "—"}</b></div>
               </div>
-              <div>
-                ${stability ? `
-                  <div class="stability-box">
-                    <div class="s-title">⏱ Vida útil</div>
-                    <div class="s-val">${stability.stability}</div>
-                  </div>
-                  <div class="storage-box">
-                    <div class="s-title">🌡 Almacenamiento</div>
-                    <div class="s-val">${medInfo?.storage_conditions ? medInfo.storage_conditions + " / " : ""}${stability.storage}</div>
-                  </div>
-                ` : (medInfo?.storage_conditions ? `
-                  <div class="storage-box">
-                    <div class="s-title">🌡 Almacenamiento</div>
-                    <div class="s-val">${medInfo.storage_conditions}</div>
-                  </div>
-                ` : "")}
-              </div>
-            </div>
-            <div class="vdivider"></div>
-            <div class="col-right">
-              <div>
+              <div class="vdivider"></div>
+              <div class="col-right">
                 <div class="patient">${rx.patient_name}</div>
                 <div class="sub">NSS: ${nss ?? (rx.patient_nss?.trim() || "—")}</div>
-                <div class="sub">SCT: ${rx.patient_bsa?.toFixed(2) || "—"} m² &nbsp;·&nbsp; Peso: ${rx.patient_weight || "—"} kg</div>
-              </div>
-              <div>
+                <div class="sub">SCT: ${rx.patient_bsa?.toFixed(2) || "—"} m² · Peso: ${rx.patient_weight || "—"} kg</div>
                 <div class="sub">${rx.protocol_name}</div>
                 ${rx.prescription_type === "Oncologico" || !rx.prescription_type ? `<div class="sub">C${rx.cycle_number} D${rx.day_of_cycle}</div>` : `<div class="sub">${rx.prescription_type === "Antibiotico" ? "Antibiótico IV" : "NPT"}</div>`}
                 <div class="sub">Médico: ${rx.prescribing_doctor}</div>
                 <div class="sub">Fecha: ${formatDate(rx.prescription_date || rx.created_date)}</div>
+              </div>
+            </div>
+            <div class="label-foot">
+              <div class="bud-box ${bud.expired ? "exp" : ""}">
+                <div class="bud-title">${bud.expired ? "⚠ Caducada · usar antes de" : "Usar antes de"}</div>
+                <div class="bud-val">${formatDateTime(bud.limit)}</div>
+                <div class="bud-sub">BUD ${bud.hours} h desde elaboración (${formatDateTime(bud.start)})${bud.known ? "" : " · estabilidad no documentada"}</div>
+              </div>
+              <div class="storage-box">
+                <div class="s-title">🌡 Almacenamiento</div>
+                <div class="s-val">${medInfo?.storage_conditions ? medInfo.storage_conditions + " · " : ""}${stability?.storage || "Temperatura ambiente"}</div>
               </div>
             </div>
           </div>
@@ -182,7 +190,7 @@ export default function Etiquetas() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Etiquetas de Mezclas</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Una etiqueta por mezcla final · Incluye vida útil y condiciones de almacenamiento
+            Una etiqueta por mezcla final · Incluye usar antes de (BUD), almacenamiento y espacio para el logo institucional
           </p>
         </div>
         <Button className="gap-2" onClick={() => printLabels(filtered)}>
@@ -206,64 +214,29 @@ export default function Etiquetas() {
         </div>
       ) : (
         <div className="flex flex-wrap gap-4">
-          {filtered.map(({ rx, drug, folio, stability, medInfo, nss }, i) => (
-            <div key={i} className="bg-white border-2 border-border rounded-xl hover:border-primary/40 transition-colors flex flex-col" style={{width:'10cm', minHeight:'5cm'}}>
-              {/* Label body: horizontal layout */}
-              <div className="flex flex-1 gap-0 p-3">
-                {/* Left col: drug info + stability */}
-                <div className="flex flex-col justify-between" style={{flex:'1.1'}}>
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-1">
-                      <Tag className="h-3 w-3 text-primary shrink-0" />
-                      <span className="font-bold text-xs">{drug.drug_name}</span>
-                    </div>
-                    <p className="font-bold text-primary">{drug.prescribed_dose ?? drug.calculated_dose ?? "—"} {drug.dose_unit || "mg"}</p>
-                    <p className="text-[10px] text-muted-foreground">{drug.route} · {drug.infusion_time}</p>
-                    {drug.frequency && <p className="text-[10px] text-muted-foreground font-medium">{drug.frequency}{drug.duration_days ? ` · ${drug.duration_days} días` : ""}</p>}
-                    <p className="text-[10px] text-muted-foreground">{drug.solution_type || drug.diluent || "—"}{(drug.prescribed_volume || drug.volume_ml) ? ` · ${drug.prescribed_volume || drug.volume_ml} mL` : ""}</p>
-                    <p className="text-[10px] text-muted-foreground">{drug.container_material || "—"}</p>
-                    <p className="text-[9px] font-mono text-muted-foreground">Folio: {folio}</p>
+          {filtered.map(({ rx, drug, folio, stability, medInfo, nss, bud }, i) => (
+            <div key={i} className="bg-white border-2 border-border rounded-xl hover:border-primary/40 transition-colors flex flex-col" style={{width:'10cm'}}>
+              <div className="flex flex-col" style={{height:'5cm'}}>
+                <div className="flex items-start justify-between gap-2 px-3 pt-2">
+                  <div className="flex items-center justify-center border border-dashed border-slate-300 rounded" style={{width:'1.5cm', height:'1.05cm'}}>
+                    <span className="text-[6px] uppercase tracking-[0.12em] text-slate-300">Logo</span>
                   </div>
-                  <div className="space-y-1 mt-1">
-                    {stability && (
-                      <>
-                        <div className="flex items-start gap-1 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-1">
-                          <Clock className="h-2.5 w-2.5 text-emerald-600 shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-[8px] font-bold text-emerald-700 uppercase">Vida útil</p>
-                            <p className="text-[9px] text-emerald-800">{stability.stability}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-1 bg-blue-50 border border-blue-200 rounded px-1.5 py-1">
-                          <Thermometer className="h-2.5 w-2.5 text-blue-600 shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-[8px] font-bold text-blue-700 uppercase">Almacenamiento</p>
-                            <p className="text-[9px] text-blue-800">{medInfo?.storage_conditions ? `${medInfo.storage_conditions} · ` : ""}{stability.storage}</p>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    {!stability && medInfo?.storage_conditions && (
-                      <div className="flex items-start gap-1 bg-blue-50 border border-blue-200 rounded px-1.5 py-1">
-                        <Thermometer className="h-2.5 w-2.5 text-blue-600 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-[8px] font-bold text-blue-700 uppercase">Almacenamiento</p>
-                          <p className="text-[9px] text-blue-800">{medInfo.storage_conditions}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <span className="font-mono text-[9px] text-muted-foreground">Folio: {folio}</span>
                 </div>
-                {/* Divider */}
-                <div className="border-l border-border mx-2" />
-                {/* Right col: patient info */}
-                <div className="flex flex-col justify-between" style={{flex:'1'}}>
-                  <div className="space-y-0.5">
-                    <p className="font-semibold text-xs">{rx.patient_name}</p>
-                    <p className="text-[9px] text-muted-foreground">NSS: {nss}</p>
-                    <p className="text-[9px] text-muted-foreground">SCT: {rx.patient_bsa?.toFixed(2) || "—"} m² · Peso: {rx.patient_weight || "—"} kg</p>
+                <div className="flex flex-1 min-h-0 px-3 pt-0.5">
+                  <div className="flex flex-col" style={{flex:'1.1'}}>
+                    <p className="text-xs font-bold leading-tight">{drug.drug_name}</p>
+                    <p className="text-xs font-bold text-primary">{drug.prescribed_dose ?? drug.calculated_dose ?? "—"} {drug.dose_unit || "mg"}</p>
+                    <p className="text-[9px] text-muted-foreground">{drug.route || "—"} · {drug.infusion_time || "—"}</p>
+                    {drug.frequency && <p className="text-[9px] font-medium text-muted-foreground">{drug.frequency}{drug.duration_days ? ` · ${drug.duration_days} días` : ""}</p>}
+                    <p className="text-[9px] text-muted-foreground">{drug.solution_type || drug.diluent || "—"}{(drug.prescribed_volume || drug.volume_ml) ? ` · ${drug.prescribed_volume || drug.volume_ml} mL` : ""}</p>
+                    <p className="text-[9px] text-muted-foreground">{drug.container_material || "—"}</p>
                   </div>
-                  <div className="space-y-0.5">
+                  <div className="border-l border-border mx-2" />
+                  <div className="flex flex-col" style={{flex:'1'}}>
+                    <p className="text-xs font-semibold leading-tight">{rx.patient_name}</p>
+                    <p className="text-[9px] text-muted-foreground">NSS: {nss}</p>
+                    <p className="text-[9px] text-muted-foreground">SCT: {rx.patient_bsa?.toFixed(2) || "—"} m² · {rx.patient_weight || "—"} kg</p>
                     <p className="text-[9px] text-muted-foreground">{rx.protocol_name}</p>
                     {(rx.prescription_type === "Oncologico" || !rx.prescription_type)
                       ? <p className="text-[9px] text-muted-foreground">C{rx.cycle_number} D{rx.day_of_cycle}</p>
@@ -273,10 +246,25 @@ export default function Etiquetas() {
                     <p className="text-[9px] text-muted-foreground">{formatDate(rx.prescription_date || rx.created_date)}</p>
                   </div>
                 </div>
+                <div className="flex gap-1.5 px-3 pb-1.5 pt-1">
+                  <div className={`rounded border px-1.5 py-0.5 ${bud.expired ? "border-red-300 bg-red-50" : "border-amber-300 bg-amber-50"}`} style={{flex:'1.2'}}>
+                    <p className={`text-[7px] font-bold uppercase tracking-wide ${bud.expired ? "text-red-700" : "text-amber-700"}`}>
+                      {bud.expired ? "⚠ Caducada · usar antes de" : "Usar antes de"}
+                    </p>
+                    <p className={`font-mono text-[11px] font-bold ${bud.expired ? "text-red-800" : "text-amber-800"}`}>{formatDateTime(bud.limit)}</p>
+                    <p className={`text-[6.5px] leading-tight ${bud.expired ? "text-red-700" : "text-amber-700"}`}>
+                      BUD {bud.hours} h desde elaboración ({formatDateTime(bud.start)}){bud.known ? "" : " · estabilidad no documentada"}
+                    </p>
+                  </div>
+                  <div className="flex-1 rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5">
+                    <p className="text-[7px] font-bold uppercase tracking-wide text-blue-700">Almacenamiento</p>
+                    <p className="text-[8px] leading-tight text-blue-800">{medInfo?.storage_conditions ? `${medInfo.storage_conditions} · ` : ""}{stability?.storage || "Temperatura ambiente"}</p>
+                  </div>
+                </div>
               </div>
               {/* Print button */}
               <div className="border-t border-border px-3 py-1.5">
-                <Button variant="outline" size="sm" className="w-full gap-1.5 h-7 text-xs" onClick={() => printLabels([{ rx, drug, folio, stability, medInfo }])}>
+                <Button variant="outline" size="sm" className="w-full gap-1.5 h-7 text-xs" onClick={() => printLabels([{ rx, drug, folio, stability, medInfo, nss, bud }])}>
                   <Printer className="h-3 w-3" /> Imprimir esta etiqueta
                 </Button>
               </div>

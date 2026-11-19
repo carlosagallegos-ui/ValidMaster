@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck, CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect } from "react";
+import RoadmapTracker from "@/components/roadmap/RoadmapTracker";
 
 const ALL_NAV_ITEMS = [
   // Panel general
@@ -144,6 +145,8 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+
+      <RoadmapTracker />
     </div>
   );
 }

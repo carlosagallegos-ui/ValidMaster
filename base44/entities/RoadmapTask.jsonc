@@ -1,0 +1,59 @@
+{
+  "name": "RoadmapTask",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Mejora a desarrollar"
+    },
+    "category": {
+      "type": "string",
+      "description": "Bloque de trabajo al que pertenece",
+      "enum": [
+        "Seguridad cl\u00ednica",
+        "Calidad y trazabilidad",
+        "Inventario",
+        "Monitoreo de \u00e1reas",
+        "Operaci\u00f3n"
+      ],
+      "enumColors": [
+        "red",
+        "purple",
+        "blue",
+        "green",
+        "gray"
+      ]
+    },
+    "done": {
+      "type": "boolean",
+      "default": false,
+      "description": "Mejora completada"
+    },
+    "done_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha en que se complet\u00f3"
+    },
+    "order_index": {
+      "type": "number",
+      "description": "Orden en la lista"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas de seguimiento"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
