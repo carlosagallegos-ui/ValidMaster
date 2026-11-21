@@ -6,6 +6,7 @@ import { Search, Printer } from "lucide-react";
 import { formatDate, formatDateTime, folioPrefix } from "@/lib/dateUtils";
 import { getDrugStability } from "@/lib/drugStability";
 import { computeBud } from "@/lib/bud";
+import { mixUrl, qrImageUrl } from "@/lib/qrCode";
 
 function buildFolios(prescriptions) {
   const byDay = {};
@@ -25,6 +26,19 @@ function buildFolios(prescriptions) {
     });
   });
   return folioMap;
+}
+
+// La etiqueta lleva un QR remoto: imprimimos cuando todas las imágenes cargaron.
+function printWhenReady(win) {
+  const waiting = Array.from(win.document.images || []).filter(img => !img.complete);
+  const go = () => { win.focus(); win.print(); };
+  if (waiting.length === 0) { setTimeout(go, 200); return; }
+  let pending = waiting.length;
+  const tick = () => { pending -= 1; if (pending <= 0) go(); };
+  waiting.forEach(img => {
+    img.addEventListener("load", tick);
+    img.addEventListener("error", tick);
+  });
 }
 
 export default function Etiquetas() {
@@ -130,6 +144,9 @@ export default function Etiquetas() {
         .storage-box { flex: 1; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 3px; padding: 2px 5px; }
         .storage-box .s-title { font-size: 7px; font-weight: bold; color: #1e40af; text-transform: uppercase; }
         .storage-box .s-val { font-size: 8px; color: #1d4ed8; }
+        .qr-box { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .qr-box img { width: 1.3cm; height: 1.3cm; display: block; }
+        .qr-box span { font-size: 5.5px; color: #666; margin-top: 1px; letter-spacing: .02em; }
         @media print { body { margin: 0; } }
       </style></head><body>
       <div class="page">
@@ -169,6 +186,10 @@ export default function Etiquetas() {
                 <div class="s-title">🌡 Almacenamiento</div>
                 <div class="s-val">${medInfo?.storage_conditions ? medInfo.storage_conditions + " · " : ""}${stability?.storage || "Temperatura ambiente"}</div>
               </div>
+              <div class="qr-box">
+                <img src="${qrImageUrl(mixUrl(rx.id))}" alt="QR de la mezcla"/>
+                <span>Ficha de la mezcla</span>
+              </div>
             </div>
           </div>
         `).join("")}
@@ -176,8 +197,7 @@ export default function Etiquetas() {
       </body></html>
     `);
     win.document.close();
-    win.focus();
-    setTimeout(() => win.print(), 400);
+    printWhenReady(win);
   };
 
   if (loading) {
@@ -190,7 +210,7 @@ export default function Etiquetas() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Etiquetas de Mezclas</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Una etiqueta por mezcla final · Incluye usar antes de (BUD), almacenamiento y espacio para el logo institucional
+            Una etiqueta por mezcla final · Incluye usar antes de (BUD), almacenamiento, espacio para el logo institucional y QR que abre la ficha de la mezcla
           </p>
         </div>
         <Button className="gap-2" onClick={() => printLabels(filtered)}>
@@ -259,6 +279,10 @@ export default function Etiquetas() {
                   <div className="flex-1 rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5">
                     <p className="text-[7px] font-bold uppercase tracking-wide text-blue-700">Almacenamiento</p>
                     <p className="text-[8px] leading-tight text-blue-800">{medInfo?.storage_conditions ? `${medInfo.storage_conditions} · ` : ""}{stability?.storage || "Temperatura ambiente"}</p>
+                  </div>
+                  <div className="flex flex-col items-center justify-center">
+                    <img src={qrImageUrl(mixUrl(rx.id))} alt="QR de la mezcla" style={{ width: "1.3cm", height: "1.3cm" }} />
+                    <span className="text-[5.5px] text-muted-foreground">Ficha</span>
                   </div>
                 </div>
               </div>
