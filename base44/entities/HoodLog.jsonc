@@ -1,0 +1,84 @@
+{
+  "name": "HoodLog",
+  "type": "object",
+  "properties": {
+    "equipment": {
+      "type": "string",
+      "description": "Nombre o n\u00famero de la campana / cabina"
+    },
+    "equipment_type": {
+      "type": "string",
+      "enum": [
+        "Campana de flujo laminar",
+        "Cabina de bioseguridad",
+        "Aislador",
+        "Otra"
+      ],
+      "description": "Tipo de equipo"
+    },
+    "area": {
+      "type": "string",
+      "description": "\u00c1rea donde se ubica el equipo"
+    },
+    "activity_type": {
+      "type": "string",
+      "enum": [
+        "Limpieza",
+        "Desinfecci\u00f3n",
+        "Certificaci\u00f3n",
+        "Mantenimiento / filtro"
+      ],
+      "description": "Actividad realizada"
+    },
+    "performed_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora en que se realiz\u00f3"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "Qui\u00e9n realiz\u00f3 la actividad"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Empresa que emiti\u00f3 la certificaci\u00f3n o mantenimiento"
+    },
+    "certificate_number": {
+      "type": "string",
+      "description": "N\u00famero de certificado o folio del proveedor"
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "Conforme",
+        "Con observaciones",
+        "No conforme"
+      ],
+      "description": "Resultado de la actividad"
+    },
+    "next_due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Pr\u00f3xima fecha de limpieza o de recertificaci\u00f3n"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observaciones"
+    }
+  },
+  "required": [
+    "equipment",
+    "activity_type",
+    "performed_date"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

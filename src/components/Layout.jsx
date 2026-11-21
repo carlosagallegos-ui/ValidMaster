@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck, CalendarDays, History, Thermometer } from "lucide-react";
+import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck, CalendarDays, History, Thermometer, ShieldCheck, TrendingUp, Bell } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect } from "react";
 import RoadmapTracker from "@/components/roadmap/RoadmapTracker";
@@ -7,6 +7,7 @@ import RoadmapTracker from "@/components/roadmap/RoadmapTracker";
 const ALL_NAV_ITEMS = [
   // Panel general
   { path: "/", label: "Panel de Control", icon: LayoutDashboard, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "preparador", "mesa_atencion", "encargado_calidad"] },
+  { path: "/alertas", label: "Centro de Alertas", icon: Bell, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "preparador", "mesa_atencion", "encargado_calidad"] },
 
   // Médico
   { path: "/nueva-prescripcion", label: "Nueva Prescripción", icon: FilePlus, roles: ["admin", "jefe_centro", "medico"] },
@@ -23,6 +24,7 @@ const ALL_NAV_ITEMS = [
   { path: "/lotes-preparacion", label: "Lotes de Preparación", icon: ClipboardCheck, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador"] },
   { path: "/medicamentos", label: "Medicamentos", icon: Package, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion"] },
   { path: "/temperaturas", label: "Temperatura de Áreas", icon: Thermometer, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador", "validador", "encargado_calidad"] },
+  { path: "/campanas", label: "Campanas y Certificaciones", icon: ShieldCheck, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador", "encargado_calidad"] },
 
   // Mesa de atención / Encargado de calidad
   { path: "/salidas", label: "Salidas de Mezclas", icon: ArrowUpFromLine, roles: ["admin", "jefe_centro", "mesa_atencion", "encargado_calidad"] },
@@ -34,6 +36,7 @@ const ALL_NAV_ITEMS = [
 
   // Informes
   { path: "/informes", label: "Informes", icon: BarChart3, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "encargado_calidad"] },
+  { path: "/kpis", label: "Tablero de KPI", icon: TrendingUp, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_calidad"] },
   { path: "/bitacora", label: "Bitácora de Auditoría", icon: History, roles: ["admin", "jefe_centro", "validador", "coordinador", "encargado_preparacion", "encargado_calidad"] },
 
   // Compartidos

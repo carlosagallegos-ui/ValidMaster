@@ -28,6 +28,9 @@ import LotesPreparacion from './pages/LotesPreparacion';
 import Programacion from './pages/Programacion';
 import Bitacora from './pages/Bitacora';
 import Temperaturas from './pages/Temperaturas';
+import Campanas from './pages/Campanas';
+import KPIs from './pages/KPIs';
+import Alertas from './pages/Alertas';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -69,6 +72,9 @@ const AuthenticatedApp = () => {
         <Route path="/programacion" element={<Programacion />} />
         <Route path="/bitacora" element={<Bitacora />} />
         <Route path="/temperaturas" element={<Temperaturas />} />
+        <Route path="/campanas" element={<Campanas />} />
+        <Route path="/kpis" element={<KPIs />} />
+        <Route path="/alertas" element={<Alertas />} />
         <Route path="/salidas" element={<Salidas />} />
         <Route path="/mis-prescripciones" element={<MisPrescripciones />} />
         <Route path="/protocolos" element={<Protocols />} />
