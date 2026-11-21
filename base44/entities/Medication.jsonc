@@ -47,6 +47,10 @@
       "type": "number",
       "description": "Cantidad disponible (frascos)"
     },
+    "reorder_point": {
+      "type": "number",
+      "description": "Punto de reorden: frascos disponibles del medicamento con los que se genera el aviso de reposici\u00f3n"
+    },
     "supplier": {
       "type": "string",
       "description": "Proveedor"

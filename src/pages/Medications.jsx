@@ -11,6 +11,8 @@ import moment from "moment";
 import { AREAS_CENTRO } from "@/lib/areasCentro";
 import ScanDialog from "@/components/inventory/ScanDialog";
 import { logAudit } from "@/lib/auditLog";
+import { computeStockAlerts } from "@/lib/stockAlerts";
+import StockAlertPanel from "@/components/inventory/StockAlertPanel";
 
 // Extraer lista única de medicamentos de los protocolos (normalizar bolo/infusión)
 const PROTOCOL_DRUGS = [...new Set(
@@ -74,7 +76,7 @@ const EMPTY = {
   drug_name: "", barcode: "", concentration: "", concentration_unit: "mg",
   vial_volume_ml: "", presentation: "Frasco ampolleta",
   lot_number: "", expiration_date: "", quantity_received: "",
-  quantity_available: "", supplier: "",
+  quantity_available: "", reorder_point: "", supplier: "",
   received_date: new Date().toISOString().split("T")[0],
   area: "", storage_conditions: "", notes: "", status: "Disponible"
 };
@@ -145,6 +147,7 @@ export default function Medications() {
       vial_volume_ml: form.vial_volume_ml ? parseFloat(form.vial_volume_ml) : undefined,
       quantity_received: parseInt(form.quantity_received) || 0,
       quantity_available: form.quantity_available !== "" ? parseInt(form.quantity_available) : parseInt(form.quantity_received) || 0,
+      reorder_point: parseInt(form.reorder_point) || 0,
     };
     if (editing) {
       const updated = await base44.entities.Medication.update(editing, data);
@@ -187,6 +190,8 @@ export default function Medications() {
     caducado: medications.filter(m => m.status === "Caducado" || (m.expiration_date && moment(m.expiration_date).isBefore(moment()))).length,
     totalFrascos: medications.reduce((sum, m) => sum + (m.quantity_available ?? m.quantity_received ?? 0), 0),
   };
+
+  const stockAlerts = computeStockAlerts(medications);
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" /></div>;
@@ -231,6 +236,8 @@ export default function Medications() {
           );
         })}
       </div>
+
+      <StockAlertPanel alerts={stockAlerts} />
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -277,7 +284,12 @@ export default function Medications() {
                         ) : "—"}
                       </td>
                       <td className="px-4 py-3 text-sm font-mono text-center">{med.quantity_received}</td>
-                      <td className="px-4 py-3 text-sm font-mono text-center font-semibold">{med.quantity_available ?? med.quantity_received}</td>
+                      <td className="px-4 py-3 text-sm font-mono text-center font-semibold">
+                        {med.quantity_available ?? med.quantity_received}
+                        {med.reorder_point > 0 && (
+                          <p className="text-[10px] font-normal text-muted-foreground">mín. {med.reorder_point}</p>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">{med.supplier || "—"}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_COLORS[med.status] || STATUS_COLORS.Disponible}`}>
@@ -397,6 +409,11 @@ export default function Medications() {
             <div>
               <Label>Cantidad disponible</Label>
               <Input type="number" min={0} value={form.quantity_available} onChange={e => set("quantity_available", e.target.value)} placeholder="Igual a recibidos si está vacío" />
+            </div>
+            <div className="col-span-2">
+              <Label>Punto de reorden (frascos)</Label>
+              <Input type="number" min={0} value={form.reorder_point ?? ""} onChange={e => set("reorder_point", e.target.value)} placeholder="Ej. 5" />
+              <p className="text-[11px] text-muted-foreground mt-1">Aviso cuando el total disponible del medicamento llegue a esta cantidad. Deja vacío para no vigilarlo.</p>
             </div>
             <div>
               <Label>Fecha de recepción</Label>
