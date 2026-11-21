@@ -1,0 +1,76 @@
+{
+  "name": "TemperatureLog",
+  "type": "object",
+  "properties": {
+    "area": {
+      "type": "string",
+      "enum": [
+        "REFRIGERACI\u00d3N",
+        "CONGELACI\u00d3N"
+      ],
+      "description": "\u00c1rea vigilada"
+    },
+    "equipment": {
+      "type": "string",
+      "description": "Equipo o c\u00e1mara donde se tom\u00f3 la lectura"
+    },
+    "temperature": {
+      "type": "number",
+      "description": "Temperatura registrada en \u00b0C"
+    },
+    "min_temp": {
+      "type": "number",
+      "description": "L\u00edmite inferior permitido en \u00b0C"
+    },
+    "max_temp": {
+      "type": "number",
+      "description": "L\u00edmite superior permitido en \u00b0C"
+    },
+    "shift": {
+      "type": "string",
+      "enum": [
+        "Matutino",
+        "Vespertino",
+        "Nocturno"
+      ],
+      "description": "Turno en que se tom\u00f3 la lectura"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de la lectura"
+    },
+    "recorded_by": {
+      "type": "string",
+      "description": "Qui\u00e9n registr\u00f3 la lectura"
+    },
+    "in_range": {
+      "type": "boolean",
+      "description": "La lectura qued\u00f3 dentro del rango permitido"
+    },
+    "corrective_action": {
+      "type": "string",
+      "description": "Acci\u00f3n correctiva ante una excursi\u00f3n de temperatura"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observaciones"
+    }
+  },
+  "required": [
+    "area",
+    "equipment",
+    "temperature",
+    "recorded_at"
+  ],
+  "rls": {
+    "create": {},
+    "read": {},
+    "update": {},
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

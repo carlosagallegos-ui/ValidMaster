@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck, CalendarDays, History } from "lucide-react";
+import { LayoutDashboard, FilePlus, ClipboardList, BookOpen, FlaskConical, LogOut, TestTube, Package, Users, Tag, Beaker, ArrowUpFromLine, BarChart3, Eye, User, Syringe, ShieldAlert, ClipboardCheck, CalendarDays, History, Thermometer } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useState, useEffect } from "react";
 import RoadmapTracker from "@/components/roadmap/RoadmapTracker";
@@ -22,6 +22,7 @@ const ALL_NAV_ITEMS = [
   { path: "/programacion", label: "Programación de Mezclas", icon: CalendarDays, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "validador", "mesa_atencion"] },
   { path: "/lotes-preparacion", label: "Lotes de Preparación", icon: ClipboardCheck, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador"] },
   { path: "/medicamentos", label: "Medicamentos", icon: Package, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion"] },
+  { path: "/temperaturas", label: "Temperatura de Áreas", icon: Thermometer, roles: ["admin", "jefe_centro", "coordinador", "encargado_preparacion", "preparador", "validador", "encargado_calidad"] },
 
   // Mesa de atención / Encargado de calidad
   { path: "/salidas", label: "Salidas de Mezclas", icon: ArrowUpFromLine, roles: ["admin", "jefe_centro", "mesa_atencion", "encargado_calidad"] },
